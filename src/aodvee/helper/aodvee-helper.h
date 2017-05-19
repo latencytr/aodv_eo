@@ -18,8 +18,8 @@
  * Authors: Pavel Boyko <boyko@iitp.ru>, written after OlsrHelper by Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
 
-#ifndef AODV_EO_HELPER_H
-#define AODV_EO_HELPER_H
+#ifndef AODVEE_HELPER_H
+#define AODVEE_HELPER_H
 
 #include "ns3/object-factory.h"
 #include "ns3/node.h"
@@ -29,22 +29,22 @@
 namespace ns3
 {
 /**
- * \ingroup aodv_eo
- * \brief Helper class that adds AODV_EO routing to nodes.
+ * \ingroup aodvee
+ * \brief Helper class that adds AODVEE routing to nodes.
  */
-class AodvEOHelper : public Ipv4RoutingHelper
+class AodveeHelper : public Ipv4RoutingHelper
 {
 public:
-  AodvEOHelper();
+  AodveeHelper();
 
   /**
-   * \returns pointer to clone of this AodvEOHelper
+   * \returns pointer to clone of this AodveeHelper
    * 
    * \internal
    * This method is mainly for internal use by the other helpers;
    * clients are expected to free the dynamic memory allocated by this method
    */
-  AodvEOHelper* Copy (void) const;
+  AodveeHelper* Copy (void) const;
 
   /**
    * \param node the node on which the routing protocol will run
@@ -76,10 +76,10 @@ public:
   int64_t AssignStreams (NodeContainer c, int64_t stream);
 
 private:
-  /** the factory to create AODV_EO routing object */
+  /** the factory to create AODVEE routing object */
   ObjectFactory m_agentFactory;
 };
 
 }
 
-#endif /* AODV_EO_HELPER_H */
+#endif /* AODVEE_HELPER_H */

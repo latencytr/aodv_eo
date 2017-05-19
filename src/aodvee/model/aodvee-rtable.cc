@@ -26,7 +26,7 @@
  *          Pavel Boyko <boyko@iitp.ru>
  */
 
-#include "aodv_eo-rtable.h"
+#include "aodvee-rtable.h"
 
 #include <algorithm>
 #include <iomanip>
@@ -36,7 +36,7 @@
 namespace ns3
 {
 
-NS_LOG_COMPONENT_DEFINE ("Aodv_EO_RoutingTable");
+NS_LOG_COMPONENT_DEFINE ("AodveeRoutingTable");
 
 namespace aodv
 {

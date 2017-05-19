@@ -26,8 +26,8 @@
  *          Pavel Boyko <boyko@iitp.ru>
  */
 
-#ifndef AODV_EO_ID_CACHE_H
-#define AODV_EO_ID_CACHE_H
+#ifndef AODVEE_ID_CACHE_H
+#define AODVEE_ID_CACHE_H
 
 #include "ns3/ipv4-address.h"
 #include "ns3/simulator.h"
@@ -35,10 +35,10 @@
 
 namespace ns3
 {
-namespace aodv_eo
+namespace aodvee
 {
 /**
- * \ingroup aodv_eo
+ * \ingroup aodvee
  * 
  * \brief Unique packets identification cache used for simple duplicate detection.
  */
@@ -83,4 +83,4 @@ private:
 
 }
 }
-#endif /* AODV_EO_ID_CACHE_H */
+#endif /* AODVEE_ID_CACHE_H */

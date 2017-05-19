@@ -20,7 +20,7 @@
  * Authors: Pavel Boyko <boyko@iitp.ru>
  */
 
-#include "ns3/aodv-module.h"
+#include "ns3/aodvee-module.h"
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
 #include "ns3/internet-module.h"

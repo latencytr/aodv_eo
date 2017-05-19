@@ -15,24 +15,50 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Based on 
+ * Based on
  *      NS-2 AODV model developed by the CMU/MONARCH group and optimized and
  *      tuned by Samir Das and Mahesh Marina, University of Cincinnati;
- * 
+ *
  *      AODV-UU implementation by Erik Nordström of Uppsala University
  *      http://core.it.uu.se/core/index.php/AODV-UU
  *
  * Authors: Elena Buchatskaia <borovkovaes@iitp.ru>
  *          Pavel Boyko <boyko@iitp.ru>
  */
+#include "aodvee-id-cache.h"
 
-#ifndef AODV_EO_H
-#define AODV_EO_H
+#include <algorithm>
 
-/**
- * \defgroup aodv_eo AODV_EO Energy Aware Routing
- *
- * This section documents the API of the ns-3 AODV_EO module. For a generic functional description, please refer to the ns-3 manual.
- */
+namespace ns3
+{
+namespace aodvee
+{
+bool
+IdCache::IsDuplicate (Ipv4Address addr, uint32_t id)
+{
+  Purge ();
+  for (std::vector<UniqueId>::const_iterator i = m_idCache.begin ();
+       i != m_idCache.end (); ++i)
+    if (i->m_context == addr && i->m_id == id)
+      return true;
+  struct UniqueId uniqueId =
+  { addr, id, m_lifetime + Simulator::Now () };
+  m_idCache.push_back (uniqueId);
+  return false;
+}
+void
+IdCache::Purge ()
+{
+  m_idCache.erase (remove_if (m_idCache.begin (), m_idCache.end (),
+                              IsExpired ()), m_idCache.end ());
+}
 
-#endif /* AODV_EO_H */
+uint32_t
+IdCache::GetSize ()
+{
+  Purge ();
+  return m_idCache.size ();
+}
+
+}
+}

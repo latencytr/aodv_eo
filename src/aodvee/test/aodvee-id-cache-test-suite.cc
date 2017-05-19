@@ -25,12 +25,12 @@
  * Authors: Elena Buchatskaia <borovkovaes@iitp.ru>
  *          Pavel Boyko <boyko@iitp.ru>
  */
-#include "ns3/aodv-id-cache.h"
+#include "ns3/aodvee-id-cache.h"
 #include "ns3/test.h"
 
 namespace ns3
 {
-namespace aodv
+namespace aodvee
 {
 
 //-----------------------------------------------------------------------------
@@ -96,7 +96,7 @@ IdCacheTest::CheckTimeout3 ()
 class IdCacheTestSuite : public TestSuite
 {
 public:
-  IdCacheTestSuite () : TestSuite ("aodv-routing-id-cache", UNIT)
+  IdCacheTestSuite () : TestSuite ("aodvee-routing-id-cache", UNIT)
   {
     AddTestCase (new IdCacheTest, TestCase::QUICK);
   }

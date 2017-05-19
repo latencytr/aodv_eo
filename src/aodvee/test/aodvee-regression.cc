@@ -18,12 +18,9 @@
  * Authors: Pavel Boyko <boyko@iitp.ru>
  */
 
-#include "bug-772.h"
+#include "aodvee-regression.h"
 
 #include "ns3/simulator.h"
-#include "ns3/random-variable-stream.h"
-#include "ns3/rng-seed-manager.h"
-#include "ns3/string.h"
 #include "ns3/mobility-helper.h"
 #include "ns3/double.h"
 #include "ns3/uinteger.h"
@@ -35,67 +32,100 @@
 #include "ns3/abort.h"
 #include "ns3/mobility-model.h"
 #include "ns3/pcap-file.h"
-#include "ns3/aodv-helper.h"
-#include "ns3/v4ping-helper.h"
+#include "ns3/aodvee-helper.h"
 #include "ns3/config.h"
-#include "ns3/inet-socket-address.h"
-#include "ns3/data-rate.h"
 #include "ns3/pcap-test.h"
+#include "ns3/rng-seed-manager.h"
+#include "ns3/icmpv4.h"
 #include <sstream>
+#include "../../aodvee/test/bug-772.h"
 
 using namespace ns3;
 
 //-----------------------------------------------------------------------------
-// UdpChainTest
+// Test suite
 //-----------------------------------------------------------------------------
-Bug772ChainTest::Bug772ChainTest (const char * const prefix, const char * const proto, Time t, uint32_t size) : 
-  TestCase ("Bug 772 UDP and TCP chain regression test"),
+class AodveeRegressionTestSuite : public TestSuite
+{
+public:
+  AodveeRegressionTestSuite () : TestSuite ("routing-aodv-regression", SYSTEM)
+  {
+    SetDataDir (NS_TEST_SOURCEDIR);
+    // General RREQ-RREP-RRER test case
+    AddTestCase (new ChainRegressionTest ("aodvee-chain-regression-test"), TestCase::QUICK);
+    // \bugid{606} test case, should crash if bug is not fixed
+    AddTestCase (new ChainRegressionTest ("bug-606-test", Seconds (10), 3, Seconds (1)), TestCase::QUICK);
+    // \bugid{772} UDP test case
+    AddTestCase (new Bug772ChainTest ("udp-chain-test", "ns3::UdpSocketFactory", Seconds (3), 10), TestCase::QUICK);
+  }
+} g_aodvRegressionTestSuite;
+ 
+
+//-----------------------------------------------------------------------------
+// ChainRegressionTest
+//-----------------------------------------------------------------------------
+ChainRegressionTest::ChainRegressionTest (const char * const prefix, Time t, uint32_t size, Time arpAliveTimeout) : 
+  TestCase ("AODVEE chain regression test"),
   m_nodes (0),
   m_prefix (prefix),
-  m_proto (proto),
   m_time (t),
   m_size (size),
   m_step (120),
-  m_port (9),
-  m_receivedPackets (0)
+  m_arpAliveTimeout (arpAliveTimeout),
+  m_seq (0)
 {
 }
 
-Bug772ChainTest::~Bug772ChainTest ()
+ChainRegressionTest::~ChainRegressionTest ()
 {
   delete m_nodes;
 }
 
 void
-Bug772ChainTest::SendData (Ptr<Socket> socket)
+ChainRegressionTest::SendPing ()
 {
-  if (Simulator::Now () < m_time)
+  if (Simulator::Now () >= m_time)
     {
-      socket->Send (Create<Packet> (1000));
-      Simulator::ScheduleWithContext (socket->GetNode ()->GetId (), Seconds (0.25),
-                                      &Bug772ChainTest::SendData, this, socket);
+      return;
     }
+
+  Ptr<Packet> p = Create<Packet> ();
+  Icmpv4Echo echo;
+  echo.SetSequenceNumber (m_seq);
+  m_seq++;
+  echo.SetIdentifier (0);
+
+  Ptr<Packet> dataPacket = Create<Packet> (56);
+  echo.SetData (dataPacket);
+  p->AddHeader (echo);
+  Icmpv4Header header;
+  header.SetType (Icmpv4Header::ECHO);
+  header.SetCode (0);
+  if (Node::ChecksumEnabled ())
+    {
+      header.EnableChecksum ();
+    }
+  p->AddHeader (header);
+  m_socket->Send (p, 0);
+  Simulator::Schedule (Seconds (1), &ChainRegressionTest::SendPing, this);
 }
 
 void
-Bug772ChainTest::HandleRead (Ptr<Socket> socket)
-{
-  m_receivedPackets++;
-}
-
-void
-Bug772ChainTest::DoRun ()
+ChainRegressionTest::DoRun ()
 {
   RngSeedManager::SetSeed (12345);
   RngSeedManager::SetRun (7);
-
-  // Default of 3 will cause packet loss 
-  Config::SetDefault ("ns3::ArpCache::PendingQueueSize", UintegerValue (10));  
+  Config::SetDefault ("ns3::ArpCache::AliveTimeout", TimeValue (m_arpAliveTimeout));
 
   CreateNodes ();
   CreateDevices ();
 
-  Simulator::Stop (m_time + Seconds (1));  // Allow buffered packets to clear
+  // At m_time / 3 move central node away and see what will happen
+  Ptr<Node> node = m_nodes->Get (m_size / 2);
+  Ptr<MobilityModel> mob = node->GetObject<MobilityModel> ();
+  Simulator::Schedule (Time (m_time / 3), &MobilityModel::SetPosition, mob, Vector (1e5, 1e5, 1e5));
+
+  Simulator::Stop (m_time);
   Simulator::Run ();
   Simulator::Destroy ();
 
@@ -105,7 +135,7 @@ Bug772ChainTest::DoRun ()
 }
 
 void
-Bug772ChainTest::CreateNodes ()
+ChainRegressionTest::CreateNodes ()
 {
   m_nodes = new NodeContainer;
   m_nodes->Create (m_size);
@@ -122,18 +152,18 @@ Bug772ChainTest::CreateNodes ()
 }
 
 void
-Bug772ChainTest::CreateDevices ()
+ChainRegressionTest::CreateDevices ()
 {
-  int64_t streamsUsed = 0;
   // 1. Setup WiFi
+  int64_t streamsUsed = 0;
   WifiMacHelper wifiMac;
   wifiMac.SetType ("ns3::AdhocWifiMac");
   YansWifiPhyHelper wifiPhy = YansWifiPhyHelper::Default ();
-  // This test suite output was originally based on YansErrorRateModel
-  wifiPhy.SetErrorRateModel ("ns3::YansErrorRateModel");
   YansWifiChannelHelper wifiChannel = YansWifiChannelHelper::Default ();
   Ptr<YansWifiChannel> chan = wifiChannel.Create ();
   wifiPhy.SetChannel (chan);
+  // This test suite output was originally based on YansErrorRateModel
+  wifiPhy.SetErrorRateModel ("ns3::YansErrorRateModel"); 
   WifiHelper wifi;
   wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", "DataMode", StringValue ("OfdmRate6Mbps"), "RtsCtsThreshold", StringValue ("2200"));
   NetDeviceContainer devices = wifi.Install (wifiPhy, wifiMac, *m_nodes); 
@@ -152,35 +182,35 @@ Bug772ChainTest::CreateDevices ()
   internetStack.SetRoutingHelper (aodv);
   internetStack.Install (*m_nodes);
   streamsUsed += internetStack.AssignStreams (*m_nodes, streamsUsed);
-  // Expect to use (3*m_size) more streams for internet stack random variables
-  NS_TEST_ASSERT_MSG_EQ (streamsUsed, ((devices.GetN () * 6) + (3*m_size)), "Stream assignment mismatch");
+  // InternetStack uses m_size more streams
+  NS_TEST_ASSERT_MSG_EQ (streamsUsed, (devices.GetN () * 8) + m_size, "Stream assignment mismatch");
   streamsUsed += aodv.AssignStreams (*m_nodes, streamsUsed);
-  // Expect to use m_size more streams for AODV
-  NS_TEST_ASSERT_MSG_EQ (streamsUsed, ((devices.GetN () * 6) + (3*m_size) + m_size), "Stream assignment mismatch");
+  // AODV uses m_size more streams
+  NS_TEST_ASSERT_MSG_EQ (streamsUsed, ((devices.GetN () * 8) + (2*m_size)), "Stream assignment mismatch");
+
   Ipv4AddressHelper address;
   address.SetBase ("10.1.1.0", "255.255.255.0");
   Ipv4InterfaceContainer interfaces = address.Assign (devices);
 
-  // 3. Setup UDP source and sink
-  m_sendSocket = Socket::CreateSocket (m_nodes->Get (0), TypeId::LookupByName (m_proto));
-  m_sendSocket->Bind ();
-  m_sendSocket->Connect (InetSocketAddress (interfaces.GetAddress (m_size-1), m_port));
-  m_sendSocket->SetAllowBroadcast (true);
-  Simulator::ScheduleWithContext (m_sendSocket->GetNode ()->GetId (), Seconds (1.0),
-                                  &Bug772ChainTest::SendData, this, m_sendSocket);
+  // 3. Setup ping
+  m_socket = Socket::CreateSocket (m_nodes->Get (0), TypeId::LookupByName ("ns3::Ipv4RawSocketFactory"));
+  m_socket->SetAttribute ("Protocol", UintegerValue (1)); // icmp
+  InetSocketAddress src = InetSocketAddress (Ipv4Address::GetAny (), 0);
+  m_socket->Bind (src);
+  InetSocketAddress dst = InetSocketAddress (interfaces.GetAddress (m_size - 1), 0);
+  m_socket->Connect (dst);
 
-  m_recvSocket = Socket::CreateSocket (m_nodes->Get (m_size - 1), TypeId::LookupByName (m_proto));
-  m_recvSocket->Bind (InetSocketAddress (Ipv4Address::GetAny (), m_port));
-  m_recvSocket->Listen ();
-  m_recvSocket->ShutdownSend ();
-  m_recvSocket->SetRecvCallback (MakeCallback (&Bug772ChainTest::HandleRead, this));
+  SendPing ();
 
+  // 4. write PCAP
+  wifiPhy.EnablePcapAll (CreateTempDirFilename (m_prefix));
 }
 
 void
-Bug772ChainTest::CheckResults ()
+ChainRegressionTest::CheckResults ()
 {
-  // We should have sent 8 packets (every 0.25 seconds from time 1 to time 3)
-  // Check that the received packet count is 8
-  NS_TEST_EXPECT_MSG_EQ (m_receivedPackets, 8, "Did not receive expected 8 packets");
+  for (uint32_t i = 0; i < m_size; ++i)
+    {
+      NS_PCAP_TEST_EXPECT_EQ (m_prefix << "-" << i << "-0.pcap");
+    }
 }

@@ -25,8 +25,8 @@
  * Authors: Elena Buchatskaia <borovkovaes@iitp.ru>
  *          Pavel Boyko <boyko@iitp.ru>
  */
-#ifndef AODV_EO_RTABLE_H
-#define AODV_EO_RTABLE_H
+#ifndef AODVEE_RTABLE_H
+#define AODVEE_RTABLE_H
 
 #include <stdint.h>
 #include <cassert>
@@ -39,7 +39,7 @@
 #include "ns3/output-stream-wrapper.h"
 
 namespace ns3 {
-namespace aodv_eo {
+namespace aodvee {
 
 /**
  * \ingroup aodv
@@ -181,7 +181,7 @@ private:
 };
 
 /**
- * \ingroup aodv_eo
+ * \ingroup aodvee
  * \brief The Routing table used by AODV protocol
  */
 class RoutingTable
@@ -255,4 +255,4 @@ private:
 }
 }
 
-#endif /* AODV_EO_RTABLE_H */
+#endif /* AODVEE_RTABLE_H */

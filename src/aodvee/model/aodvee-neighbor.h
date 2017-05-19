@@ -26,8 +26,8 @@
  *          Pavel Boyko <boyko@iitp.ru>
  */
 
-#ifndef AODV_EO_NEIGHBOR_H
-#define AODV_EO_NEIGHBOR_H
+#ifndef AODVEE_NEIGHBOR_H
+#define AODVEE_NEIGHBOR_H
 
 #include "ns3/simulator.h"
 #include "ns3/timer.h"
@@ -39,11 +39,11 @@
 
 namespace ns3
 {
-namespace aodv_eo
+namespace aodvee
 {
 class RoutingProtocol;
 /**
- * \ingroup aodv_eo
+ * \ingroup aodvee
  * \brief maintain list of active neighbors
  */
 class Neighbors
@@ -111,4 +111,4 @@ private:
 }
 }
 
-#endif /* AODV_EO_NEIGHBOR_H */
+#endif /* AODVEE_NEIGHBOR_H */

@@ -25,14 +25,9 @@
  * Authors: Elena Buchatskaia <borovkovaes@iitp.ru>
  *          Pavel Boyko <boyko@iitp.ru>
  */
-#ifndef AODV_EO_ROUTINGPROTOCOL_H
-#define AODV_EO_ROUTINGPROTOCOL_H
+#ifndef AODVEE_ROUTINGPROTOCOL_H
+#define AODVEE_ROUTINGPROTOCOL_H
 
-#include "aodv_eo-rtable.h"
-#include "aodv_eo-rqueue.h"
-#include "aodv_eo-packet.h"
-#include "aodv_eo-neighbor.h"
-#include "aodv_eo-dpd.h"
 #include "ns3/node.h"
 #include "ns3/random-variable-stream.h"
 #include "ns3/output-stream-wrapper.h"
@@ -40,21 +35,26 @@
 #include "ns3/ipv4-interface.h"
 #include "ns3/ipv4-l3-protocol.h"
 #include <map>
+#include "aodvee-dpd.h"
+#include "aodvee-neighbor.h"
+#include "aodvee-packet.h"
+#include "aodvee-rqueue.h"
+#include "aodvee-rtable.h"
 
 namespace ns3
 {
-namespace aodv_eo
+namespace aodvee
 {
 /**
- * \ingroup aodv_eo
+ * \ingroup aodvee
  * 
- * \brief AODV_EO routing protocol
+ * \brief AODVEE routing protocol
  */
 class RoutingProtocol : public Ipv4RoutingProtocol
 {
 public:
   static TypeId GetTypeId (void);
-  static const uint32_t AODV_EO_PORT;
+  static const uint32_t AODVEE_PORT;
 
   /// c-tor
   RoutingProtocol ();
@@ -278,4 +278,4 @@ private:
 
 }
 }
-#endif /* AODV_EO_ROUTINGPROTOCOL_H */
+#endif /* AODVEE_ROUTINGPROTOCOL_H */

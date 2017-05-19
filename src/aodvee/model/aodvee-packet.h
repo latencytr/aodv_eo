@@ -25,8 +25,8 @@
  * Authors: Elena Buchatskaia <borovkovaes@iitp.ru>
  *          Pavel Boyko <boyko@iitp.ru>
  */
-#ifndef AODV_EO_PACKET_H
-#define AODV_EO_PACKET_H
+#ifndef AODVEE_PACKET_H
+#define AODVEE_PACKET_H
 
 #include <iostream>
 #include "ns3/header.h"
@@ -36,7 +36,7 @@
 #include "ns3/nstime.h"
 
 namespace ns3 {
-namespace aodv_eo {
+namespace aodvee {
 
 enum MessageType
 {
@@ -47,7 +47,7 @@ enum MessageType
 };
 
 /**
-* \ingroup aodv_eo
+* \ingroup aodvee
 * \brief AODV types
 */
 class TypeHeader : public Header
@@ -77,7 +77,7 @@ private:
 std::ostream & operator<< (std::ostream & os, TypeHeader const & h);
 
 /**
-* \ingroup aodv_eo
+* \ingroup aodvee
 * \brief   Route Request (RREQ) Message Format
   \verbatim
   0                   1                   2                   3
@@ -151,7 +151,7 @@ private:
 std::ostream & operator<< (std::ostream & os, RreqHeader const &);
 
 /**
-* \ingroup aodv_eo
+* \ingroup aodvee
 * \brief Route Reply (RREP) Message Format
   \verbatim
   0                   1                   2                   3
@@ -251,7 +251,7 @@ std::ostream & operator<< (std::ostream & os, RrepAckHeader const &);
 
 
 /**
-* \ingroup aodv_eo
+* \ingroup aodvee
 * \brief Route Error (RERR) Message Format
   \verbatim
   0                   1                   2                   3
@@ -312,4 +312,4 @@ private:
 std::ostream & operator<< (std::ostream & os, RerrHeader const &);
 }
 }
-#endif /* AODV_EO_PACKET_H */
+#endif /* AODVEE_PACKET_H */

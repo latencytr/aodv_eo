@@ -1,3 +1,4 @@
+
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
  * Copyright (c) 2009 IITP RAS
@@ -28,7 +29,7 @@
 #define NS_LOG_APPEND_CONTEXT                                   \
   if (m_ipv4) { std::clog << "[node " << m_ipv4->GetObject<Node> ()->GetId () << "] "; } 
 
-#include "aodv_eo-routing-protocol.h"
+#include "aodvee-routing-protocol.h"
 #include "ns3/log.h"
 #include "ns3/boolean.h"
 #include "ns3/random-variable-stream.h"
@@ -47,17 +48,17 @@
 namespace ns3
 {
 
-NS_LOG_COMPONENT_DEFINE ("Aodv_EO_RoutingProtocol");
+NS_LOG_COMPONENT_DEFINE ("AodveeRoutingProtocol");
 
-namespace aodv_eo
+namespace aodvee
 {
 NS_OBJECT_ENSURE_REGISTERED (RoutingProtocol);
 
 /// UDP Port for AODV control traffic
-const uint32_t RoutingProtocol::AODV_EO_PORT = 654;
+const uint32_t RoutingProtocol::AODVEE_PORT = 654;
 
 //-----------------------------------------------------------------------------
-/// Tag used by AODV_EO implementation
+/// Tag used by AODVEE implementation
 
 class DeferredRouteOutputTag : public Tag
 {
@@ -67,9 +68,9 @@ public:
 
   static TypeId GetTypeId ()
   {
-    static TypeId tid = TypeId ("ns3::aodv_eo::DeferredRouteOutputTag")
+    static TypeId tid = TypeId ("ns3::aodvee::DeferredRouteOutputTag")
       .SetParent<Tag> ()
-      .SetGroupName("Aodv_EO")
+      .SetGroupName("Aodvee")
       .AddConstructor<DeferredRouteOutputTag> ()
     ;
     return tid;
@@ -163,9 +164,9 @@ RoutingProtocol::RoutingProtocol () :
 TypeId
 RoutingProtocol::GetTypeId (void)
 {
-  static TypeId tid = TypeId ("ns3::aodv_eo::RoutingProtocol")
+  static TypeId tid = TypeId ("ns3::aodvee::RoutingProtocol")
     .SetParent<Ipv4RoutingProtocol> ()
-    .SetGroupName("Aodv_EO")
+    .SetGroupName("Aodvee")
     .AddConstructor<RoutingProtocol> ()
     .AddAttribute ("HelloInterval", "HELLO messages emission interval.",
                    TimeValue (Seconds (1)),
@@ -323,7 +324,7 @@ RoutingProtocol::PrintRoutingTable (Ptr<OutputStreamWrapper> stream) const
   *stream->GetStream () << "Node: " << m_ipv4->GetObject<Node> ()->GetId ()
                         << "; Time: " << Now().As (Time::S)
                         << ", Local time: " << GetObject<Node> ()->GetLocalTime ().As (Time::S)
-                        << ", AODV_EO Routing table" << std::endl;
+                        << ", AODVEE Routing table" << std::endl;
 
   m_routingTable.Print (stream);
   *stream->GetStream () << std::endl;
@@ -368,7 +369,7 @@ RoutingProtocol::RouteOutput (Ptr<Packet> p, const Ipv4Header &header,
   if (m_socketAddresses.empty ())
     {
       sockerr = Socket::ERROR_NOROUTETOHOST;
-      NS_LOG_LOGIC ("No aodv_eo interfaces");
+      NS_LOG_LOGIC ("No aodvee interfaces");
       Ptr<Ipv4Route> route;
       return route;
     }
@@ -435,7 +436,7 @@ RoutingProtocol::RouteInput (Ptr<const Packet> p, const Ipv4Header &header,
   NS_LOG_FUNCTION (this << p->GetUid () << header.GetDestination () << idev->GetAddress ());
   if (m_socketAddresses.empty ())
     {
-      NS_LOG_LOGIC ("No aodv_eo interfaces");
+      NS_LOG_LOGIC ("No aodvee interfaces");
       return false;
     }
   NS_ASSERT (m_ipv4 != 0);
@@ -462,7 +463,7 @@ RoutingProtocol::RouteInput (Ptr<const Packet> p, const Ipv4Header &header,
   if (IsMyOwnAddress (origin))
     return true;
 
-  // AODV_EO is not a multicast routing protocol
+  // AODVEE is not a multicast routing protocol
   if (dst.IsMulticast ())
     {
       return false; 
@@ -502,9 +503,9 @@ RoutingProtocol::RouteInput (Ptr<const Packet> p, const Ipv4Header &header,
               {
                 UdpHeader udpHeader;
                 p->PeekHeader (udpHeader);
-                if (udpHeader.GetDestinationPort () == AODV_EO_PORT)
+                if (udpHeader.GetDestinationPort () == AODVEE_PORT)
                   {
-                    // AODV_EO packets sent in broadcast are already managed
+                    // AODVEE packets sent in broadcast are already managed
                     return true;
                   }
               }
@@ -650,7 +651,7 @@ RoutingProtocol::NotifyInterfaceUp (uint32_t i)
   Ptr<Ipv4L3Protocol> l3 = m_ipv4->GetObject<Ipv4L3Protocol> ();
   if (l3->GetNAddresses (i) > 1)
     {
-      NS_LOG_WARN ("AODV_EO does not work with more then one address per each interface.");
+      NS_LOG_WARN ("AODVEE does not work with more then one address per each interface.");
     }
   Ipv4InterfaceAddress iface = l3->GetAddress (i, 0);
   if (iface.GetLocal () == Ipv4Address ("127.0.0.1"))
@@ -661,7 +662,7 @@ RoutingProtocol::NotifyInterfaceUp (uint32_t i)
                                              UdpSocketFactory::GetTypeId ());
   NS_ASSERT (socket != 0);
   socket->SetRecvCallback (MakeCallback (&RoutingProtocol::RecvAodv, this));
-  socket->Bind (InetSocketAddress (iface.GetLocal (), AODV_EO_PORT));
+  socket->Bind (InetSocketAddress (iface.GetLocal (), AODVEE_PORT));
   socket->BindToNetDevice (l3->GetNetDevice (i));
   socket->SetAllowBroadcast (true);
   socket->SetIpRecvTtl (true);
@@ -672,7 +673,7 @@ RoutingProtocol::NotifyInterfaceUp (uint32_t i)
                                  UdpSocketFactory::GetTypeId ());
   NS_ASSERT (socket != 0);
   socket->SetRecvCallback (MakeCallback (&RoutingProtocol::RecvAodv, this));
-  socket->Bind (InetSocketAddress (iface.GetBroadcast (), AODV_EO_PORT));
+  socket->Bind (InetSocketAddress (iface.GetBroadcast (), AODVEE_PORT));
   socket->BindToNetDevice (l3->GetNetDevice (i));
   socket->SetAllowBroadcast (true);
   socket->SetIpRecvTtl (true);
@@ -734,7 +735,7 @@ RoutingProtocol::NotifyInterfaceDown (uint32_t i)
 
   if (m_socketAddresses.empty ())
     {
-      NS_LOG_LOGIC ("No aodv_eo interfaces");
+      NS_LOG_LOGIC ("No aodvee interfaces");
       m_htimer.Cancel ();
       m_nb.Clear ();
       m_routingTable.Clear ();
@@ -763,7 +764,7 @@ RoutingProtocol::NotifyAddAddress (uint32_t i, Ipv4InterfaceAddress address)
                                                      UdpSocketFactory::GetTypeId ());
           NS_ASSERT (socket != 0);
           socket->SetRecvCallback (MakeCallback (&RoutingProtocol::RecvAodv,this));
-          socket->Bind (InetSocketAddress (iface.GetLocal (), AODV_EO_PORT));
+          socket->Bind (InetSocketAddress (iface.GetLocal (), AODVEE_PORT));
           socket->BindToNetDevice (l3->GetNetDevice (i));
           socket->SetAllowBroadcast (true);
           m_socketAddresses.insert (std::make_pair (socket, iface));
@@ -773,7 +774,7 @@ RoutingProtocol::NotifyAddAddress (uint32_t i, Ipv4InterfaceAddress address)
                                                        UdpSocketFactory::GetTypeId ());
           NS_ASSERT (socket != 0);
           socket->SetRecvCallback (MakeCallback (&RoutingProtocol::RecvAodv, this));
-          socket->Bind (InetSocketAddress (iface.GetBroadcast (), AODV_EO_PORT));
+          socket->Bind (InetSocketAddress (iface.GetBroadcast (), AODVEE_PORT));
           socket->BindToNetDevice (l3->GetNetDevice (i));
           socket->SetAllowBroadcast (true);
           socket->SetIpRecvTtl (true);
@@ -822,7 +823,7 @@ RoutingProtocol::NotifyRemoveAddress (uint32_t i, Ipv4InterfaceAddress address)
           NS_ASSERT (socket != 0);
           socket->SetRecvCallback (MakeCallback (&RoutingProtocol::RecvAodv, this));
           // Bind to any IP address so that broadcasts can be received
-          socket->Bind (InetSocketAddress (iface.GetLocal (), AODV_EO_PORT));
+          socket->Bind (InetSocketAddress (iface.GetLocal (), AODVEE_PORT));
           socket->BindToNetDevice (l3->GetNetDevice (i));
           socket->SetAllowBroadcast (true);
           socket->SetIpRecvTtl (true);
@@ -833,7 +834,7 @@ RoutingProtocol::NotifyRemoveAddress (uint32_t i, Ipv4InterfaceAddress address)
                                                        UdpSocketFactory::GetTypeId ());
           NS_ASSERT (socket != 0);
           socket->SetRecvCallback (MakeCallback (&RoutingProtocol::RecvAodv, this));
-          socket->Bind (InetSocketAddress (iface.GetBroadcast (), AODV_EO_PORT));
+          socket->Bind (InetSocketAddress (iface.GetBroadcast (), AODVEE_PORT));
           socket->BindToNetDevice (l3->GetNetDevice (i));
           socket->SetAllowBroadcast (true);
           socket->SetIpRecvTtl (true);
@@ -847,7 +848,7 @@ RoutingProtocol::NotifyRemoveAddress (uint32_t i, Ipv4InterfaceAddress address)
         }
       if (m_socketAddresses.empty ())
         {
-          NS_LOG_LOGIC ("No aodv_eo interfaces");
+          NS_LOG_LOGIC ("No aodvee interfaces");
           m_htimer.Cancel ();
           m_nb.Clear ();
           m_routingTable.Clear ();
@@ -856,7 +857,7 @@ RoutingProtocol::NotifyRemoveAddress (uint32_t i, Ipv4InterfaceAddress address)
     }
   else
     {
-      NS_LOG_LOGIC ("Remove address not participating in AODV_EO operation");
+      NS_LOG_LOGIC ("Remove address not participating in AODVEE operation");
     }
 }
 
@@ -885,17 +886,17 @@ RoutingProtocol::LoopbackRoute (const Ipv4Header & hdr, Ptr<NetDevice> oif) cons
   rt->SetDestination (hdr.GetDestination ());
   //
   // Source address selection here is tricky.  The loopback route is
-  // returned when AODV_EO does not have a route; this causes the packet
+  // returned when AODVEE does not have a route; this causes the packet
   // to be looped back and handled (cached) in RouteInput() method
   // while a route is found. However, connection-oriented protocols
   // like TCP need to create an endpoint four-tuple (src, src port,
   // dst, dst port) and create a pseudo-header for checksumming.  So,
-  // AODV_EO needs to guess correctly what the eventual source address
+  // AODVEE needs to guess correctly what the eventual source address
   // will be.
   //
   // For single interface, single address nodes, this is not a problem.
   // When there are possibly multiple outgoing interfaces, the policy
-  // implemented here is to pick the first available AODV_EO interface.
+  // implemented here is to pick the first available AODVEE interface.
   // If RouteOutput() caller specified an outgoing interface, that 
   // further constrains the selection of source address
   //
@@ -918,7 +919,7 @@ RoutingProtocol::LoopbackRoute (const Ipv4Header & hdr, Ptr<NetDevice> oif) cons
     {
       rt->SetSource (j->second.GetLocal ());
     }
-  NS_ASSERT_MSG (rt->GetSource () != Ipv4Address (), "Valid AODV_EO source address not found");
+  NS_ASSERT_MSG (rt->GetSource () != Ipv4Address (), "Valid AODVEE source address not found");
   rt->SetGateway (Ipv4Address ("127.0.0.1"));
   rt->SetOutputDevice (m_lo);
   return rt;
@@ -991,7 +992,7 @@ RoutingProtocol::SendRequest (Ipv4Address dst)
   m_requestId++;
   rreqHeader.SetId (m_requestId);
 
-  // Send RREQ as subnet directed broadcast from each interface used by aodv_eo
+  // Send RREQ as subnet directed broadcast from each interface used by aodvee
   for (std::map<Ptr<Socket>, Ipv4InterfaceAddress>::const_iterator j =
          m_socketAddresses.begin (); j != m_socketAddresses.end (); ++j)
     {
@@ -1028,7 +1029,7 @@ RoutingProtocol::SendRequest (Ipv4Address dst)
 void
 RoutingProtocol::SendTo (Ptr<Socket> socket, Ptr<Packet> packet, Ipv4Address destination)
 {
-    socket->SendTo (packet, 0, InetSocketAddress (destination, AODV_EO_PORT));
+    socket->SendTo (packet, 0, InetSocketAddress (destination, AODVEE_PORT));
 
 }
 void
@@ -1088,7 +1089,7 @@ RoutingProtocol::RecvAodv (Ptr<Socket> socket)
   packet->RemoveHeader (tHeader);
   if (!tHeader.IsValid ())
     {
-      NS_LOG_DEBUG ("AODV_EO message " << packet->GetUid () << " with unknown type received: " << tHeader.Get () << ". Drop");
+      NS_LOG_DEBUG ("AODVEE message " << packet->GetUid () << " with unknown type received: " << tHeader.Get () << ". Drop");
       return; // drop
     }
   switch (tHeader.Get ())
@@ -1371,7 +1372,7 @@ RoutingProtocol::SendReply (RreqHeader const & rreqHeader, RoutingTableEntry con
   packet->AddHeader (tHeader);
   Ptr<Socket> socket = FindSocketWithInterfaceAddress (toOrigin.GetInterface ());
   NS_ASSERT (socket);
-  socket->SendTo (packet, 0, InetSocketAddress (toOrigin.GetNextHop (), AODV_EO_PORT));
+  socket->SendTo (packet, 0, InetSocketAddress (toOrigin.GetNextHop (), AODVEE_PORT));
 }
 
 void
@@ -1406,7 +1407,7 @@ RoutingProtocol::SendReplyByIntermediateNode (RoutingTableEntry & toDst, Routing
   packet->AddHeader (tHeader);
   Ptr<Socket> socket = FindSocketWithInterfaceAddress (toOrigin.GetInterface ());
   NS_ASSERT (socket);
-  socket->SendTo (packet, 0, InetSocketAddress (toOrigin.GetNextHop (), AODV_EO_PORT));
+  socket->SendTo (packet, 0, InetSocketAddress (toOrigin.GetNextHop (), AODVEE_PORT));
 
   // Generating gratuitous RREPs
   if (gratRep)
@@ -1424,7 +1425,7 @@ RoutingProtocol::SendReplyByIntermediateNode (RoutingTableEntry & toDst, Routing
       Ptr<Socket> socket = FindSocketWithInterfaceAddress (toDst.GetInterface ());
       NS_ASSERT (socket);
       NS_LOG_LOGIC ("Send gratuitous RREP " << packet->GetUid ());
-      socket->SendTo (packetToDst, 0, InetSocketAddress (toDst.GetNextHop (), AODV_EO_PORT));
+      socket->SendTo (packetToDst, 0, InetSocketAddress (toDst.GetNextHop (), AODVEE_PORT));
     }
 }
 
@@ -1444,7 +1445,7 @@ RoutingProtocol::SendReplyAck (Ipv4Address neighbor)
   m_routingTable.LookupRoute (neighbor, toNeighbor);
   Ptr<Socket> socket = FindSocketWithInterfaceAddress (toNeighbor.GetInterface ());
   NS_ASSERT (socket);
-  socket->SendTo (packet, 0, InetSocketAddress (neighbor, AODV_EO_PORT));
+  socket->SendTo (packet, 0, InetSocketAddress (neighbor, AODVEE_PORT));
 }
 
 void
@@ -1581,7 +1582,7 @@ RoutingProtocol::RecvReply (Ptr<Packet> p, Ipv4Address receiver, Ipv4Address sen
   packet->AddHeader (tHeader);
   Ptr<Socket> socket = FindSocketWithInterfaceAddress (toOrigin.GetInterface ());
   NS_ASSERT (socket);
-  socket->SendTo (packet, 0, InetSocketAddress (toOrigin.GetNextHop (), AODV_EO_PORT));
+  socket->SendTo (packet, 0, InetSocketAddress (toOrigin.GetNextHop (), AODVEE_PORT));
 }
 
 void
@@ -1922,7 +1923,7 @@ RoutingProtocol::SendRerrWhenNoRouteToForward (Ipv4Address dst,
           toOrigin.GetInterface ());
       NS_ASSERT (socket);
       NS_LOG_LOGIC ("Unicast RERR to the source of the data transmission");
-      socket->SendTo (packet, 0, InetSocketAddress (toOrigin.GetNextHop (), AODV_EO_PORT));
+      socket->SendTo (packet, 0, InetSocketAddress (toOrigin.GetNextHop (), AODVEE_PORT));
     }
   else
     {
@@ -1943,7 +1944,7 @@ RoutingProtocol::SendRerrWhenNoRouteToForward (Ipv4Address dst,
             { 
               destination = iface.GetBroadcast ();
             }
-          socket->SendTo (packet->Copy (), 0, InetSocketAddress (destination, AODV_EO_PORT));
+          socket->SendTo (packet->Copy (), 0, InetSocketAddress (destination, AODVEE_PORT));
         }
     }
 }
@@ -2064,5 +2065,5 @@ RoutingProtocol::DoInitialize (void)
   Ipv4RoutingProtocol::DoInitialize ();
 }
 
-} //namespace aodv_eo
+} //namespace aodvee
 } //namespace ns3

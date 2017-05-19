@@ -25,14 +25,14 @@
  * Authors: Elena Buchatskaia <borovkovaes@iitp.ru>
  *          Pavel Boyko <boyko@iitp.ru>
  */
-#include "aodv_eo-packet.h"
+#include "aodvee-packet.h"
 
 #include "ns3/address-utils.h"
 #include "ns3/packet.h"
 
 namespace ns3
 {
-namespace aodv_eo
+namespace aodvee
 {
 
 NS_OBJECT_ENSURE_REGISTERED (TypeHeader);
@@ -47,7 +47,7 @@ TypeHeader::GetTypeId ()
 {
   static TypeId tid = TypeId ("ns3::aodv::TypeHeader")
     .SetParent<Header> ()
-    .SetGroupName("Aodv_EO")
+    .SetGroupName("Aodvee")
     .AddConstructor<TypeHeader> ()
   ;
   return tid;
@@ -153,9 +153,9 @@ NS_OBJECT_ENSURE_REGISTERED (RreqHeader);
 TypeId
 RreqHeader::GetTypeId ()
 {
-  static TypeId tid = TypeId ("ns3::aodv_eo::RreqHeader")
+  static TypeId tid = TypeId ("ns3::aodvee::RreqHeader")
     .SetParent<Header> ()
-    .SetGroupName("Aodv_EO")
+    .SetGroupName("Aodvee")
     .AddConstructor<RreqHeader> ()
   ;
   return tid;
@@ -293,9 +293,9 @@ NS_OBJECT_ENSURE_REGISTERED (RrepHeader);
 TypeId
 RrepHeader::GetTypeId ()
 {
-  static TypeId tid = TypeId ("ns3::aodv_eo::RrepHeader")
+  static TypeId tid = TypeId ("ns3::aodvee::RrepHeader")
     .SetParent<Header> ()
-    .SetGroupName("Aodv_EO")
+    .SetGroupName("Aodvee")
     .AddConstructor<RrepHeader> ()
   ;
   return tid;
@@ -436,9 +436,9 @@ NS_OBJECT_ENSURE_REGISTERED (RrepAckHeader);
 TypeId
 RrepAckHeader::GetTypeId ()
 {
-  static TypeId tid = TypeId ("ns3::aodv_eo::RrepAckHeader")
+  static TypeId tid = TypeId ("ns3::aodvee::RrepAckHeader")
     .SetParent<Header> ()
-    .SetGroupName("Aodv_EO")
+    .SetGroupName("Aodvee")
     .AddConstructor<RrepAckHeader> ()
   ;
   return tid;
@@ -503,9 +503,9 @@ NS_OBJECT_ENSURE_REGISTERED (RerrHeader);
 TypeId
 RerrHeader::GetTypeId ()
 {
-  static TypeId tid = TypeId ("ns3::aodv_eo::RerrHeader")
+  static TypeId tid = TypeId ("ns3::aodvee::RerrHeader")
     .SetParent<Header> ()
-    .SetGroupName("Aodv_EO")
+    .SetGroupName("Aodvee")
     .AddConstructor<RerrHeader> ()
   ;
   return tid;

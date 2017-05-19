@@ -25,8 +25,8 @@
  * Authors: Elena Buchatskaia <borovkovaes@iitp.ru>
  *          Pavel Boyko <boyko@iitp.ru>
  */
-#ifndef AODV_EO_RQUEUE_H
-#define AODV_EO_RQUEUE_H
+#ifndef AODVEE_RQUEUE_H
+#define AODVEE_RQUEUE_H
 
 #include <vector>
 #include "ns3/ipv4-routing-protocol.h"
@@ -34,10 +34,10 @@
 
 
 namespace ns3 {
-namespace aodv_eo {
+namespace aodvee {
 
 /**
- * \ingroup aodv_eo
+ * \ingroup aodvee
  * \brief AODV Queue Entry
  */
 class QueueEntry
@@ -88,7 +88,7 @@ private:
   Time m_expire;
 };
 /**
- * \ingroup aodv_eo
+ * \ingroup aodvee
  * \brief AODV route request queue
  * 
  * Since AODV is an on demand routing we queue requests while looking for route.
@@ -136,4 +136,4 @@ private:
 }
 }
 
-#endif /* AODV_EO_RQUEUE_H */
+#endif /* AODVEE_RQUEUE_H */

@@ -25,7 +25,7 @@
  * Authors: Elena Buchatskaia <borovkovaes@iitp.ru>
  *          Pavel Boyko <boyko@iitp.ru>
  */
-#include "aodv_eo-rqueue.h"
+#include "aodvee-rqueue.h"
 
 #include <algorithm>
 #include <functional>
@@ -36,9 +36,9 @@
 namespace ns3
 {
 
-NS_LOG_COMPONENT_DEFINE ("Aodv_EO_RequestQueue");
+NS_LOG_COMPONENT_DEFINE ("AodveeRequestQueue");
 
-namespace aodv_eo
+namespace aodvee
 {
 uint32_t
 RequestQueue::GetSize ()

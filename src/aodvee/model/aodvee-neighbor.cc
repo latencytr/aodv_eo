@@ -26,7 +26,8 @@
  *          Pavel Boyko <boyko@iitp.ru>
  */
 
-#include "aodv_eo-neighbor.h"
+#include "aodvee-neighbor.h"
+
 #include "ns3/log.h"
 #include <algorithm>
 
@@ -34,9 +35,9 @@
 namespace ns3
 {
   
-NS_LOG_COMPONENT_DEFINE ("AodvEONeighbors");
+NS_LOG_COMPONENT_DEFINE ("AodveeNeighbors");
 
-namespace aodv_eo
+namespace aodvee
 {
 Neighbors::Neighbors (Time delay) : 
   m_ntimer (Timer::CANCEL_ON_DESTROY)
