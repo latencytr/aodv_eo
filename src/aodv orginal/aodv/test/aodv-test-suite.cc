@@ -18,15 +18,15 @@
  * Authors: Pavel Boyko <boyko@iitp.ru>
  */
 #include "ns3/test.h"
-#include "ns3/aodvee-neighbor.h"
-#include "ns3/aodvee-packet.h"
-#include "ns3/aodvee-rqueue.h"
-#include "ns3/aodvee-rtable.h"
+#include "ns3/aodv-neighbor.h"
+#include "ns3/aodv-packet.h"
+#include "ns3/aodv-rqueue.h"
+#include "ns3/aodv-rtable.h"
 #include "ns3/ipv4-route.h"
 
 namespace ns3
 {
-namespace aodvee
+namespace aodv
 {
 
 /// Unit test for neighbors

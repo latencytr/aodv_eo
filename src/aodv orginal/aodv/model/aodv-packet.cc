@@ -25,14 +25,13 @@
  * Authors: Elena Buchatskaia <borovkovaes@iitp.ru>
  *          Pavel Boyko <boyko@iitp.ru>
  */
-#include "aodvee-packet.h"
-
+#include "aodv-packet.h"
 #include "ns3/address-utils.h"
 #include "ns3/packet.h"
 
 namespace ns3
 {
-namespace aodvee
+namespace aodv
 {
 
 NS_OBJECT_ENSURE_REGISTERED (TypeHeader);
@@ -45,9 +44,9 @@ TypeHeader::TypeHeader (MessageType t) :
 TypeId
 TypeHeader::GetTypeId ()
 {
-  static TypeId tid = TypeId ("ns3::aodvee::TypeHeader")
+  static TypeId tid = TypeId ("ns3::aodv::TypeHeader")
     .SetParent<Header> ()
-    .SetGroupName("Aodvee")
+    .SetGroupName("Aodv")
     .AddConstructor<TypeHeader> ()
   ;
   return tid;
@@ -153,9 +152,9 @@ NS_OBJECT_ENSURE_REGISTERED (RreqHeader);
 TypeId
 RreqHeader::GetTypeId ()
 {
-  static TypeId tid = TypeId ("ns3::aodvee::RreqHeader")
+  static TypeId tid = TypeId ("ns3::aodv::RreqHeader")
     .SetParent<Header> ()
-    .SetGroupName("Aodvee")
+    .SetGroupName("Aodv")
     .AddConstructor<RreqHeader> ()
   ;
   return tid;
@@ -293,9 +292,9 @@ NS_OBJECT_ENSURE_REGISTERED (RrepHeader);
 TypeId
 RrepHeader::GetTypeId ()
 {
-  static TypeId tid = TypeId ("ns3::aodvee::RrepHeader")
+  static TypeId tid = TypeId ("ns3::aodv::RrepHeader")
     .SetParent<Header> ()
-    .SetGroupName("Aodvee")
+    .SetGroupName("Aodv")
     .AddConstructor<RrepHeader> ()
   ;
   return tid;
@@ -436,9 +435,9 @@ NS_OBJECT_ENSURE_REGISTERED (RrepAckHeader);
 TypeId
 RrepAckHeader::GetTypeId ()
 {
-  static TypeId tid = TypeId ("ns3::aodvee::RrepAckHeader")
+  static TypeId tid = TypeId ("ns3::aodv::RrepAckHeader")
     .SetParent<Header> ()
-    .SetGroupName("Aodvee")
+    .SetGroupName("Aodv")
     .AddConstructor<RrepAckHeader> ()
   ;
   return tid;
@@ -503,9 +502,9 @@ NS_OBJECT_ENSURE_REGISTERED (RerrHeader);
 TypeId
 RerrHeader::GetTypeId ()
 {
-  static TypeId tid = TypeId ("ns3::aodvee::RerrHeader")
+  static TypeId tid = TypeId ("ns3::aodv::RerrHeader")
     .SetParent<Header> ()
-    .SetGroupName("Aodvee")
+    .SetGroupName("Aodv")
     .AddConstructor<RerrHeader> ()
   ;
   return tid;

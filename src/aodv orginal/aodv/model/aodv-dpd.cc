@@ -15,24 +15,36 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Based on 
- *      NS-2 AODV model developed by the CMU/MONARCH group and optimized and
- *      tuned by Samir Das and Mahesh Marina, University of Cincinnati;
- * 
- *      AODV-UU implementation by Erik Nordström of Uppsala University
- *      http://core.it.uu.se/core/index.php/AODV-UU
  *
  * Authors: Elena Buchatskaia <borovkovaes@iitp.ru>
  *          Pavel Boyko <boyko@iitp.ru>
  */
 
-#ifndef AODV_EE_H
-#define AODV_EE_H
+#include "aodv-dpd.h"
 
-/**
- * \defgroup aodvee AODVEE Energy Aware Routing
- *
- * This section documents the API of the ns-3 AODVEE module. For a generic functional description, please refer to the ns-3 manual.
- */
+namespace ns3
+{
+namespace aodv
+{
 
-#endif /* AODV_EE_H */
+bool
+DuplicatePacketDetection::IsDuplicate  (Ptr<const Packet> p, const Ipv4Header & header)
+{
+  return m_idCache.IsDuplicate (header.GetSource (), p->GetUid () );
+}
+void
+DuplicatePacketDetection::SetLifetime (Time lifetime)
+{
+  m_idCache.SetLifetime (lifetime);
+}
+
+Time
+DuplicatePacketDetection::GetLifetime () const
+{
+  return m_idCache.GetLifeTime ();
+}
+
+
+}
+}
+

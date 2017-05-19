@@ -17,9 +17,8 @@
  *
  * Authors: Pavel Boyko <boyko@iitp.ru>, written after OlsrHelper by Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
-#include "aodvee-helper.h"
-
-#include "ns3/aodvee-routing-protocol.h"
+#include "aodv-helper.h"
+#include "ns3/aodv-routing-protocol.h"
 #include "ns3/node-list.h"
 #include "ns3/names.h"
 #include "ns3/ptr.h"
@@ -28,34 +27,34 @@
 namespace ns3
 {
 
-AodveeHelper::AodveeHelper() :
+AodvHelper::AodvHelper() : 
   Ipv4RoutingHelper ()
 {
-  m_agentFactory.SetTypeId ("ns3::aodvee::RoutingProtocol");
+  m_agentFactory.SetTypeId ("ns3::aodv::RoutingProtocol");
 }
 
-AodveeHelper*
-AodveeHelper::Copy (void) const
+AodvHelper* 
+AodvHelper::Copy (void) const 
 {
-  return new AodveeHelper (*this);
+  return new AodvHelper (*this); 
 }
 
 Ptr<Ipv4RoutingProtocol> 
-AodveeHelper::Create (Ptr<Node> node) const
+AodvHelper::Create (Ptr<Node> node) const
 {
-  Ptr<aodvee::RoutingProtocol> agent = m_agentFactory.Create<aodvee::RoutingProtocol> ();
+  Ptr<aodv::RoutingProtocol> agent = m_agentFactory.Create<aodv::RoutingProtocol> ();
   node->AggregateObject (agent);
   return agent;
 }
 
 void 
-AodveeHelper::Set (std::string name, const AttributeValue &value)
+AodvHelper::Set (std::string name, const AttributeValue &value)
 {
   m_agentFactory.Set (name, value);
 }
 
 int64_t
-AodveeHelper::AssignStreams (NodeContainer c, int64_t stream)
+AodvHelper::AssignStreams (NodeContainer c, int64_t stream)
 {
   int64_t currentStream = stream;
   Ptr<Node> node;
@@ -66,10 +65,10 @@ AodveeHelper::AssignStreams (NodeContainer c, int64_t stream)
       NS_ASSERT_MSG (ipv4, "Ipv4 not installed on node");
       Ptr<Ipv4RoutingProtocol> proto = ipv4->GetRoutingProtocol ();
       NS_ASSERT_MSG (proto, "Ipv4 routing not installed on node");
-      Ptr<aodvee::RoutingProtocol> aodvee = DynamicCast<aodvee::RoutingProtocol> (proto);
-      if (aodvee)
+      Ptr<aodv::RoutingProtocol> aodv = DynamicCast<aodv::RoutingProtocol> (proto);
+      if (aodv)
         {
-          currentStream += aodvee->AssignStreams (currentStream);
+          currentStream += aodv->AssignStreams (currentStream);
           continue;
         }
       // Aodv may also be in a list
@@ -78,11 +77,11 @@ AodveeHelper::AssignStreams (NodeContainer c, int64_t stream)
         {
           int16_t priority;
           Ptr<Ipv4RoutingProtocol> listProto;
-          Ptr<aodvee::RoutingProtocol> listAodv;
+          Ptr<aodv::RoutingProtocol> listAodv;
           for (uint32_t i = 0; i < list->GetNRoutingProtocols (); i++)
             {
               listProto = list->GetRoutingProtocol (i, priority);
-              listAodv = DynamicCast<aodvee::RoutingProtocol> (listProto);
+              listAodv = DynamicCast<aodv::RoutingProtocol> (listProto);
               if (listAodv)
                 {
                   currentStream += listAodv->AssignStreams (currentStream);

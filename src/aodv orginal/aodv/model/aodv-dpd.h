@@ -20,20 +20,20 @@
  *          Pavel Boyko <boyko@iitp.ru>
  */
 
-#ifndef AODVEE_DPD_H
-#define AODVEE_DPD_H
+#ifndef AODV_DPD_H
+#define AODV_DPD_H
 
-#include "aodvee-id-cache.h"
+#include "aodv-id-cache.h"
 #include "ns3/nstime.h"
 #include "ns3/packet.h"
 #include "ns3/ipv4-header.h"
 
 namespace ns3
 {
-namespace aodvee
+namespace aodv
 {
 /**
- * \ingroup aodvee
+ * \ingroup aodv
  * 
  * \brief Helper class used to remember already seen packets and detect duplicates.
  *
@@ -59,4 +59,4 @@ private:
 }
 }
 
-#endif /* AODVEE_DPD_H */
+#endif /* AODV_DPD_H */

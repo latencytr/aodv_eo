@@ -18,8 +18,8 @@
  * Authors: Pavel Boyko <boyko@iitp.ru>
  */
 
-#ifndef AODVEE_REGRESSION_H
-#define AODVEE_REGRESSION_H
+#ifndef AODV_REGRESSION_H
+#define AODV_REGRESSION_H
 
 #include "ns3/test.h"
 #include "ns3/nstime.h"
@@ -29,7 +29,7 @@
 using namespace ns3;
 
 /**
- * \ingroup aodvee
+ * \ingroup aodv
  * 
  * \brief AODV chain regression test
  *

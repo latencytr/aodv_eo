@@ -14,14 +14,7 @@ def build(bld):
         'helper/aodvee-helper.cc',
         ]
 
-    aodv_test = bld.create_ns3_module_test_library('aodv_eo')
-    aodv_test.source = [
-        'test/aodvee-id-cache-test-suite.cc',
-        'test/aodvee-test-suite.cc',
-        'test/aodvee-regression.cc',
-        'test/bug-772.cc',
-        'test/loopback.cc',
-        ]
+   
 
     headers = bld(features='ns3header')
     headers.module = 'aodvee'
@@ -39,4 +32,4 @@ def build(bld):
     if bld.env['ENABLE_EXAMPLES']:
         bld.recurse('examples')
 
-    bld.ns3_python_bindings()
+
