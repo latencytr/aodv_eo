@@ -96,6 +96,7 @@ std::ostream & operator<< (std::ostream & os, TypeHeader const & h);
   |                  Originator Sequence Number                   |
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   |           Total Energy        |  Minimum Energy               |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   \endverbatim
 */
 class RreqHeader : public Header 
@@ -105,7 +106,7 @@ public:
   RreqHeader (uint8_t flags = 0, uint8_t reserved = 0, uint8_t hopCount = 0,
               uint32_t requestID = 0, Ipv4Address dst = Ipv4Address (),
               uint32_t dstSeqNo = 0, Ipv4Address origin = Ipv4Address (),
-              uint32_t originSeqNo = 0, double totalEnergy = 0.0f, double minimumEnergy = 0.0f);
+              uint32_t originSeqNo = 0, uint16_t totalEnergy = 0, uint16_t minimumEnergy = 65535);
 
   // Header serialization/deserialization
   static TypeId GetTypeId ();
@@ -128,10 +129,10 @@ public:
   Ipv4Address GetOrigin () const { return m_origin; }
   void SetOriginSeqno (uint32_t s) { m_originSeqNo = s; }
   uint32_t GetOriginSeqno () const { return m_originSeqNo; }
-  void SetTotalEnergy(double totalEnergy){ m_totalEnergy = totalEnergy; }
-  double GetTotalEnergy() const { return m_totalEnergy; }
-  void SetMinimumEnergy(double minimumEnergy) { m_minimumEnergy = minimumEnergy; }
-  double GetMinimumEnergy() const { return m_minimumEnergy; }
+  void SetTotalEnergy(uint16_t totalEnergy){ m_totalEnergy = totalEnergy; }
+  uint16_t GetTotalEnergy() const { return m_totalEnergy; }
+  void SetMinimumEnergy(uint16_t minimumEnergy) { m_minimumEnergy = minimumEnergy; }
+  uint16_t GetMinimumEnergy() const { return m_minimumEnergy; }
 
   // Flags
   void SetGratiousRrep (bool f);
@@ -151,8 +152,8 @@ private:
   uint32_t       m_dstSeqNo;       ///< Destination Sequence Number
   Ipv4Address    m_origin;         ///< Originator IP Address
   uint32_t       m_originSeqNo;    ///< Source Sequence Number
-  double		 m_totalEnergy;	   ///< Total Energy
-  double		 m_minimumEnergy;  ///< Minimum Energy
+  uint16_t		 m_totalEnergy;	   ///< Total Energy
+  uint16_t		 m_minimumEnergy;  ///< Minimum Energy
 };
 
 std::ostream & operator<< (std::ostream & os, RreqHeader const &);
@@ -175,6 +176,7 @@ std::ostream & operator<< (std::ostream & os, RreqHeader const &);
   |                           Lifetime                            |
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   |           Total Energy        |       Minimum Energy          |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   \endverbatim
 */
 class RrepHeader : public Header
@@ -183,7 +185,8 @@ public:
   /// c-tor
   RrepHeader (uint8_t prefixSize = 0, uint8_t hopCount = 0, Ipv4Address dst =
                 Ipv4Address (), uint32_t dstSeqNo = 0, Ipv4Address origin =
-                Ipv4Address (), Time lifetime = MilliSeconds (0));
+                Ipv4Address (), Time lifetime = MilliSeconds (0),
+				uint16_t totalEnergy = 0, uint16_t minimumEnergy = 65535);
   // Header serialization/deserialization
   static TypeId GetTypeId ();
   TypeId GetInstanceTypeId () const;
@@ -203,6 +206,10 @@ public:
   Ipv4Address GetOrigin () const { return m_origin; }
   void SetLifeTime (Time t);
   Time GetLifeTime () const;
+  void SetTotalEnergy(uint16_t totalEnergy){ m_totalEnergy = totalEnergy; }
+  uint16_t GetTotalEnergy() const { return m_totalEnergy; }
+  void SetMinimumEnergy(uint16_t minimumEnergy) { m_minimumEnergy = minimumEnergy; }
+  uint16_t GetMinimumEnergy() const { return m_minimumEnergy; }
 
   // Flags
   void SetAckRequired (bool f);
@@ -222,8 +229,8 @@ private:
   uint32_t      m_dstSeqNo;         ///< Destination Sequence Number
   Ipv4Address   m_origin;           ///< Source IP Address
   uint32_t      m_lifeTime;         ///< Lifetime (in milliseconds)
-  double		m_totalEnergy;	   	///< Total Energy
-  double		m_minimumEnergy;  	///< Minimum Energy
+  uint16_t		m_totalEnergy;	   	///< Total Energy
+  uint16_t		m_minimumEnergy;  	///< Minimum Energy
 };
 
 std::ostream & operator<< (std::ostream & os, RrepHeader const &);

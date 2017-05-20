@@ -61,14 +61,14 @@ public:
 //  RoutingTableEntry (Ptr<NetDevice> dev = 0,Ipv4Address dst = Ipv4Address (), bool vSeqNo = false, uint32_t m_seqNo = 0,
 //                     Ipv4InterfaceAddress iface = Ipv4InterfaceAddress (), uint16_t  hops = 0,
 //                     Ipv4Address nextHop = Ipv4Address (), Time lifetime = Simulator::Now ()),
-///					   double m_totalEnergy, double m_minimumEnergy;
+///					   uint16_t m_totalEnergy, uint16_t m_minimumEnergy;
 
 	RoutingTableEntry(Ptr<NetDevice> dev = 0, Ipv4Address dst = Ipv4Address(),
 			bool vSeqNo = false, uint32_t m_seqNo = 0,
 			Ipv4InterfaceAddress iface = Ipv4InterfaceAddress(), uint16_t hops =
-					0, Ipv4Address nextHop = Ipv4Address(), Time lifetime =
-					Simulator::Now(), double m_totalEnergy = 0.0f,
-			double m_minimumEnergy = 0.0f);
+			0, Ipv4Address nextHop = Ipv4Address(), Time lifetime =
+			Simulator::Now(), uint16_t m_totalEnergy = 0,
+			uint16_t m_minimumEnergy = 65535);
 
 	~RoutingTableEntry();
 
@@ -187,6 +187,20 @@ public:
 	Time GetBlacklistTimeout() const {
 		return m_blackListTimeout;
 	}
+	void SetTotalEnergy(uint16_t totalEnergy)
+	{
+		m_totalEnergy = totalEnergy;
+	}
+	uint16_t GetTotalEnergy() const {
+		return m_totalEnergy;
+	}
+	void SetMinimumEnergy(uint16_t minimumEnergy)
+	{
+		m_minimumEnergy = minimumEnergy;
+	}
+	uint16_t GetMinimumEnergy() const {
+		return m_minimumEnergy;
+	}
 	/// RREP_ACK timer
 	Timer m_ackTimer;
 
@@ -236,9 +250,9 @@ private:
 	/// Time for which the node is put into the blacklist
 	Time m_blackListTimeout;
 	/// Route total energy
-	double m_totalEnergy;
+	uint16_t m_totalEnergy;
 	/// Minimum energy residual at route
-	double m_minimumEnergy;
+	uint16_t m_minimumEnergy;
 };
 
 /**

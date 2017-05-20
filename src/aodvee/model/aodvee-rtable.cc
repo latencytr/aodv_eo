@@ -46,12 +46,13 @@ namespace aodvee
  */
 
 RoutingTableEntry::RoutingTableEntry (Ptr<NetDevice> dev, Ipv4Address dst, bool vSeqNo, uint32_t seqNo,
-                                      Ipv4InterfaceAddress iface, uint16_t hops, Ipv4Address nextHop, Time lifetime, double totalEnergy, double minimumEnergy) :
+                                      Ipv4InterfaceAddress iface, uint16_t hops, Ipv4Address nextHop, Time lifetime,
+									  uint16_t totalEnergy, uint16_t minimumEnergy) :
   m_ackTimer (Timer::CANCEL_ON_DESTROY),
   m_validSeqNo (vSeqNo), m_seqNo (seqNo), m_hops (hops),
   m_lifeTime (lifetime + Simulator::Now ()), m_iface (iface), m_flag (VALID),
   m_reqCount (0), m_blackListState (false), m_blackListTimeout (Simulator::Now ()),
-  m_totalEnergy(0.0f), m_minimumEnergy(0.0f)
+  m_totalEnergy(totalEnergy), m_minimumEnergy(minimumEnergy)
 {
   m_ipv4Route = Create<Ipv4Route> ();
   m_ipv4Route->SetDestination (dst);
@@ -186,7 +187,9 @@ RoutingTableEntry::Print (Ptr<OutputStreamWrapper> stream) const
   *os << std::setiosflags (std::ios::fixed) << 
   std::setiosflags (std::ios::left) << std::setprecision (2) <<
   std::setw (14) << (m_lifeTime - Simulator::Now ()).GetSeconds ();
-  *os << "\t" << m_hops << "\n";
+  *os << "\t" << m_hops;
+  *os << "\t\t" << m_totalEnergy;
+  *os << "\t\t" << m_minimumEnergy << "\n";
 }
 
 /*
@@ -443,7 +446,7 @@ RoutingTable::Print (Ptr<OutputStreamWrapper> stream) const
   std::map<Ipv4Address, RoutingTableEntry> table = m_ipv4AddressEntry;
   Purge (table);
   *stream->GetStream () << "\nAODV Routing table\n"
-                        << "Destination\tGateway\t\tInterface\tFlag\tExpire\t\tHops\n";
+                        << "Destination\tGateway\t\tInterface\tFlag\tExpire\t\tHops\tTotalEnergy\tMinimumEnergy\n";
   for (std::map<Ipv4Address, RoutingTableEntry>::const_iterator i =
          table.begin (); i != table.end (); ++i)
     {
