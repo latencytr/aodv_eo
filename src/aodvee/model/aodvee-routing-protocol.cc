@@ -44,6 +44,7 @@
 #include "ns3/pointer.h"
 #include <algorithm>
 #include <limits>
+#include "ns3/basic-energy-source.h"
 
 namespace ns3
 {
@@ -638,7 +639,8 @@ RoutingProtocol::SetIpv4 (Ptr<Ipv4> ipv4)
   RoutingTableEntry rt (/*device=*/ m_lo, /*dst=*/ Ipv4Address::GetLoopback (), /*know seqno=*/ true, /*seqno=*/ 0,
                                     /*iface=*/ Ipv4InterfaceAddress (Ipv4Address::GetLoopback (), Ipv4Mask ("255.0.0.0")),
                                     /*hops=*/ 1, /*next hop=*/ Ipv4Address::GetLoopback (),
-                                    /*lifetime=*/ Simulator::GetMaximumSimulationTime ());
+                                    /*lifetime=*/ Simulator::GetMaximumSimulationTime (),
+									/*totalEnergy=*/ 0.0f, /*minimumEnergy=*/ 0.0f);
   m_routingTable.AddRoute (rt);
 
   Simulator::ScheduleNow (&RoutingProtocol::Start, this);
@@ -1201,6 +1203,12 @@ RoutingProtocol::RecvRequest (Ptr<Packet> p, Ipv4Address receiver, Ipv4Address s
   // Increment RREQ hop count
   uint8_t hop = rreqHeader.GetHopCount () + 1;
   rreqHeader.SetHopCount (hop);
+
+  // Increment Total Energy
+  Ptr<Node> node = m_ipv4->GetObject<Node>();
+  Ptr<BasicEnergySource>  basicEnergySource  =  node->GetObject<BasicEnergySource>();
+  double totalEnergy = rreqHeader.GetTotalEnergy() + basicEnergySource->GetRemainingEnergy();
+  rreqHeader.SetTotalEnergy(totalEnergy);
 
   /*
    *  When the reverse route is created or updated, the following actions on the route are also carried out:

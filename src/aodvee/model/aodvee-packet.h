@@ -95,6 +95,7 @@ std::ostream & operator<< (std::ostream & os, TypeHeader const & h);
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   |                  Originator Sequence Number                   |
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |           Total Energy        |  Minimum Energy               |
   \endverbatim
 */
 class RreqHeader : public Header 
@@ -104,7 +105,7 @@ public:
   RreqHeader (uint8_t flags = 0, uint8_t reserved = 0, uint8_t hopCount = 0,
               uint32_t requestID = 0, Ipv4Address dst = Ipv4Address (),
               uint32_t dstSeqNo = 0, Ipv4Address origin = Ipv4Address (),
-              uint32_t originSeqNo = 0);
+              uint32_t originSeqNo = 0, double totalEnergy = 0.0f, double minimumEnergy = 0.0f);
 
   // Header serialization/deserialization
   static TypeId GetTypeId ();
@@ -127,6 +128,10 @@ public:
   Ipv4Address GetOrigin () const { return m_origin; }
   void SetOriginSeqno (uint32_t s) { m_originSeqNo = s; }
   uint32_t GetOriginSeqno () const { return m_originSeqNo; }
+  void SetTotalEnergy(double totalEnergy){ m_totalEnergy = totalEnergy; }
+  double GetTotalEnergy() const { return m_totalEnergy; }
+  void SetMinimumEnergy(double minimumEnergy) { m_minimumEnergy = minimumEnergy; }
+  double GetMinimumEnergy() const { return m_minimumEnergy; }
 
   // Flags
   void SetGratiousRrep (bool f);
@@ -146,6 +151,8 @@ private:
   uint32_t       m_dstSeqNo;       ///< Destination Sequence Number
   Ipv4Address    m_origin;         ///< Originator IP Address
   uint32_t       m_originSeqNo;    ///< Source Sequence Number
+  double		 m_totalEnergy;	   ///< Total Energy
+  double		 m_minimumEnergy;  ///< Minimum Energy
 };
 
 std::ostream & operator<< (std::ostream & os, RreqHeader const &);
@@ -167,6 +174,7 @@ std::ostream & operator<< (std::ostream & os, RreqHeader const &);
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   |                           Lifetime                            |
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |           Total Energy        |       Minimum Energy          |
   \endverbatim
 */
 class RrepHeader : public Header
@@ -207,13 +215,15 @@ public:
 
   bool operator== (RrepHeader const & o) const;
 private:
-  uint8_t       m_flags;                  ///< A - acknowledgment required flag
-  uint8_t       m_prefixSize;         ///< Prefix Size
-  uint8_t             m_hopCount;         ///< Hop Count
+  uint8_t       m_flags;            ///< A - acknowledgment required flag
+  uint8_t       m_prefixSize;       ///< Prefix Size
+  uint8_t       m_hopCount;         ///< Hop Count
   Ipv4Address   m_dst;              ///< Destination IP Address
   uint32_t      m_dstSeqNo;         ///< Destination Sequence Number
-  Ipv4Address     m_origin;           ///< Source IP Address
+  Ipv4Address   m_origin;           ///< Source IP Address
   uint32_t      m_lifeTime;         ///< Lifetime (in milliseconds)
+  double		m_totalEnergy;	   	///< Total Energy
+  double		m_minimumEnergy;  	///< Minimum Energy
 };
 
 std::ostream & operator<< (std::ostream & os, RrepHeader const &);

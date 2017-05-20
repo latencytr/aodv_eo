@@ -142,9 +142,9 @@ operator<< (std::ostream & os, TypeHeader const & h)
 // RREQ
 //-----------------------------------------------------------------------------
 RreqHeader::RreqHeader (uint8_t flags, uint8_t reserved, uint8_t hopCount, uint32_t requestID, Ipv4Address dst,
-                        uint32_t dstSeqNo, Ipv4Address origin, uint32_t originSeqNo) :
+                        uint32_t dstSeqNo, Ipv4Address origin, uint32_t originSeqNo, double totalEnergy, double minimumEnergy) :
   m_flags (flags), m_reserved (reserved), m_hopCount (hopCount), m_requestID (requestID), m_dst (dst),
-  m_dstSeqNo (dstSeqNo), m_origin (origin),  m_originSeqNo (originSeqNo)
+  m_dstSeqNo (dstSeqNo), m_origin (origin),  m_originSeqNo (originSeqNo), m_totalEnergy(totalEnergy), m_minimumEnergy(minimumEnergy)
 {
 }
 
