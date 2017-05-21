@@ -1612,11 +1612,20 @@ RoutingProtocol::RecvReply (Ptr<Packet> p, Ipv4Address receiver, Ipv4Address sen
        * The existing entry is updated only in the following circumstances:
        * (i) the sequence number in the routing table is marked as invalid in route table entry.
        */
+	  /*
+	   * Varolan kayıt aşağıdaki durumlarda güncellenir:
+	   * (i) Yönlendirme tablosundaki sekans numarası geçersiz olarak işaretlenmişse.
+	   */
+	  uint16_t receivedAverageEnergy = rrepHeader.GetTotalEnergy() / (hop + 1);
+	  uint16_t rtAverageEnergy = toDst.GetTotalEnergy() / (toDst.GetHop() + 1);
+	  uint16_t threshold = (uint16_t)((receivedAverageEnergy + rtAverageEnergy) / 2 * 0.20f);
+
       if (!toDst.GetValidSeqNo ())
         {
           m_routingTable.Update (newEntry);
         }
       // (ii)the Destination Sequence Number in the RREP is greater than the node's copy of the destination sequence number and the known value is valid,
+      // (ii)RREP'teki hedef sekans numarası düğümdeki hedef sekans numarasından büyükse ve geçerli ise
       else if ((int32_t (rrepHeader.GetDstSeqno ()) - int32_t (toDst.GetSeqNo ())) > 0)
         {
           m_routingTable.Update (newEntry);
@@ -1624,16 +1633,32 @@ RoutingProtocol::RecvReply (Ptr<Packet> p, Ipv4Address receiver, Ipv4Address sen
       else
         {
           // (iii) the sequence numbers are the same, but the route is marked as inactive.
+    	  // (iii) Rota inaktif olarak işaretlemiş ve sekans numaraları gelen paketteki ile eşitse
           if ((rrepHeader.GetDstSeqno () == toDst.GetSeqNo ()) && (toDst.GetFlag () != VALID))
             {
               m_routingTable.Update (newEntry);
             }
-          //TODO: _____Bu kısıma minimum energy residual değerleri karşılaştırması eklenecek.
           // (iv)  the sequence numbers are the same, and the New Hop Count is smaller than the hop count in route table entry.
+          // (iv) sekans numaraları gelen paketteki ile eşit ve gelen paketteki hop sayısı tablodakinden küçük ise
           else if ((rrepHeader.GetDstSeqno () == toDst.GetSeqNo ()) && (hop < toDst.GetHop ()))
             {
               m_routingTable.Update (newEntry);
             }
+          //TODO: Hop sayıları eşit ise
+          else if ((rrepHeader.GetDstSeqno () == toDst.GetSeqNo ()) && hop == toDst.GetHop())
+            {
+        	  //TODO: Minimum enerjisi hesaplanan thresholddan yüksek olan rota ile rota tablosundaki değer güncellenecek
+        	  if(rrepHeader.GetMinimumEnergy() > toDst.GetMinimumEnergy() && rrepHeader.GetMinimumEnergy() > threshold)
+        	  {
+        		  m_routingTable.Update (newEntry);
+        	  }
+        	  //TODO: Ortalama enerjisi yüksek olan rota ile rota tablosundaki değer güncellenecek
+        	  else if(receivedAverageEnergy > rtAverageEnergy)
+        	  {
+        		  m_routingTable.Update (newEntry);
+        	  }
+            }
+
         }
     }
   else

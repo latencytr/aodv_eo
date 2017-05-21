@@ -22,6 +22,7 @@
 
 #include "ns3/netanim-module.h"
 #include "ns3/aodvee-module.h"
+//#include "ns3/aodv-module.h"
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
 #include "ns3/internet-module.h"
@@ -117,9 +118,9 @@ int main (int argc, char **argv)
 
 //-----------------------------------------------------------------------------
 AodveeExample::AodveeExample () :
-  size (10),
+  size (100),
   step (100),
-  totalTime (60),
+  totalTime (240),
   pcap (true),
   printRoutes (true)
 {
@@ -156,7 +157,7 @@ AodveeExample::Run ()
 
   std::cout << "Starting simulation for " << totalTime << " s ...\n";
 
-  AnimationInterface anim ("AodveeExample.xml");
+  //AnimationInterface anim ("AodveeExample.xml");
 
 
   Simulator::Stop (Seconds (totalTime));
@@ -253,7 +254,8 @@ AodveeExample::InstallInternetStack ()
   if (printRoutes)
     {
       Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper> ("aodvee.routes", std::ios::out);
-      aodvee.PrintRoutingTableAllAt (Seconds (8), routingStream);
+      //aodvee.PrintRoutingTableAllAt (Seconds (8), routingStream);
+      aodvee.PrintRoutingTableAllEvery(Seconds (5), routingStream);
     }
 }
 
@@ -261,6 +263,7 @@ void
 AodveeExample::InstallApplications ()
 {
   V4PingHelper ping (interfaces.GetAddress (size - 1));
+  //V4PingHelper ping (interfaces.GetAddress (6));
   ping.SetAttribute ("Verbose", BooleanValue (true));
 
   ApplicationContainer p = ping.Install (nodes.Get (0));
@@ -276,6 +279,9 @@ AodveeExample::InstallApplications ()
 void
 AodveeExample::InstallEnergyModule()
 {
+	 RngSeedManager::SetSeed(5);
+	 RngSeedManager::SetRun(100);
+	 Ptr<UniformRandomVariable> x=CreateObject<UniformRandomVariable>();
 	 BasicEnergySourceHelper basicSourceHelper;
 	 basicSourceHelper.Set ("BasicEnergySourceInitialEnergyJ", DoubleValue(300.0f));
 	 EnergySourceContainer sources = basicSourceHelper.Install (nodes);
@@ -289,8 +295,10 @@ AodveeExample::InstallEnergyModule()
 		 Ptr<BasicEnergySource> energySource = CreateObject<BasicEnergySource>();
 		 Ptr<WifiRadioEnergyModel> energyModel = CreateObject<WifiRadioEnergyModel>();
 
+		 energySource->SetInitialEnergy ((double)x->GetInteger(50,300));
 		 energyModel->SetEnergySource (energySource);
 		 energySource->AppendDeviceEnergyModel (energyModel);
+		 energyModel->SetTxCurrentA(0.0174);
 
 		 // aggregate energy source to node
 		 Ptr<Node> object = *j;
@@ -299,8 +307,8 @@ AodveeExample::InstallEnergyModule()
 		 std::string context = static_cast<std::ostringstream*>( &(std::ostringstream() << index) )->str();
 		 std::cout << "Connecting node " << context << std::endl;
 		 Ptr<BasicEnergySource> basicSourcePtr = DynamicCast<BasicEnergySource> (sources.Get (index));
-		 basicSourcePtr->TraceConnect ("RemainingEnergy", context, MakeCallback (&RemainingEnergy));
-		 basicSourcePtr->TraceConnect ("TotalEnergyConsumption", context, MakeCallback (&TotalEnergy));
+		 //basicSourcePtr->TraceConnect ("RemainingEnergy", context, MakeCallback (&RemainingEnergy));
+		 //basicSourcePtr->TraceConnect ("TotalEnergyConsumption", context, MakeCallback (&TotalEnergy));
 		 index++;
 	 }
 
