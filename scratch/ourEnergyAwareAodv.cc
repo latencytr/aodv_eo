@@ -159,7 +159,8 @@ int main (int argc, char *argv[])
   NetDeviceContainer devices = fixedPosTopDev;
  //devices.Add(wifi.Install (wifiPhyHelper, wifiMacHelper, fixedPosBottom));
  //Dugume wifi cihaz ozelligi verir
-  devices.Add (wifi.Install (wifiPhyHelper, wifiMacHelper, mover));
+  NetDeviceContainer moverDev = wifi.Install (wifiPhyHelper, wifiMacHelper, mover);
+  devices.Add (moverDev);
 
 
 
@@ -271,17 +272,25 @@ int main (int argc, char *argv[])
 
 
 
-  basicSourceHelper.Set ("BasicEnergySourceInitialEnergyJ", DoubleValue(300));
+  basicSourceHelper.Set ("BasicEnergySourceInitialEnergyJ", DoubleValue(300.0f));
   // install source
   //Enerji özelliği eklendi
   EnergySourceContainer sources = basicSourceHelper.Install (nodeContainer);
   /* device energy model */
   WifiRadioEnergyModelHelper radioEnergyHelper;
   // configure radio energy model
-  radioEnergyHelper.Set ("TxCurrentA", DoubleValue (10));
-  //radioEnergyHelper.Set ("TxCurrentA", DoubleValue (0.0174));
+  //radioEnergyHelper.Set ("TxCurrentA", DoubleValue (10));
+  radioEnergyHelper.Set ("TxCurrentA", DoubleValue (0.0174));
   // install device model
   DeviceEnergyModelContainer deviceModels = radioEnergyHelper.Install (fixedPosTopDev, sources);
+
+  EnergySourceContainer moverSource = basicSourceHelper.Install(mover);
+  deviceModels.Add(radioEnergyHelper.Install(moverDev, moverSource));
+  std::string conte = static_cast<std::ostringstream*>( &(std::ostringstream() << "mover") )->str();
+  Ptr<BasicEnergySource> basicSourceMoverPtr = DynamicCast<BasicEnergySource> (moverSource.Get(0));
+  basicSourceMoverPtr->TraceConnect ("RemainingEnergy", conte, MakeCallback (&RemainingEnergy));
+
+
   /***************************************************************************/
 
   //iterate on the node container an asign Energy model and Device to each Node
@@ -292,10 +301,10 @@ int main (int argc, char *argv[])
       Ptr<BasicEnergySource> energySource = CreateObject<BasicEnergySource>();
       Ptr<WifiRadioEnergyModel> energyModel = CreateObject<WifiRadioEnergyModel>();
 
-      energySource->SetInitialEnergy (x->GetInteger(50,300));
+      energySource->SetInitialEnergy ((double)x->GetInteger(50,300));
       energyModel->SetEnergySource (energySource);
       energySource->AppendDeviceEnergyModel (energyModel);
-      energyModel->SetTxCurrentA(20);
+      energyModel->SetTxCurrentA(0.0174);
 
       // aggregate energy source to node
       Ptr<Node> object = *j;
@@ -388,7 +397,7 @@ int main (int argc, char *argv[])
    //AnimationInterface anim (tracebase + ".xml");
 
 
-  AnimationInterface anim ("wirelessExample2.xml");
+  AnimationInterface anim ("EnergyAwareAodv.xml");
   anim.EnablePacketMetadata ();
   anim.SetMobilityPollInterval(Seconds(0.1));
 
@@ -399,7 +408,7 @@ int main (int argc, char *argv[])
   srand((unsigned)time(0));
 
   int totalNodes = rows * columns;
-  int numClients =  3;//rand() % totalNodes+1;
+  int numClients =  1;//rand() % totalNodes+1;
 
 
   for(int i=0; i< numClients; i++){
@@ -425,12 +434,14 @@ int main (int argc, char *argv[])
 // wifiPhyHelper.EnableAsciiAll (ascii.CreateFileStream (tracebase + ".tr"));
 
 
-
-
+  Ptr<OutputStreamWrapper> routingtable = Create<OutputStreamWrapper>("routingtable",std::ios::out);
+//  aodv.PrintRoutingTableEvery(Seconds(1), nodeContainer.Get(0), routingtable);
+  aodv.PrintRoutingTableAllEvery(Seconds(1), routingtable);
 
   // uncomment the next line to verify that node 'mover' is actually moving
   //Simulator::Schedule(Seconds(position_interval), &printPosition);
 
+  endtime  = 5; //for debug
   Simulator::Schedule(Seconds(endtime), &stopMover);
 
   Simulator::Stop(Seconds (endtime+60));

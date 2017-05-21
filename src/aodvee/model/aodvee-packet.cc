@@ -142,9 +142,11 @@ operator<< (std::ostream & os, TypeHeader const & h)
 // RREQ
 //-----------------------------------------------------------------------------
 RreqHeader::RreqHeader (uint8_t flags, uint8_t reserved, uint8_t hopCount, uint32_t requestID, Ipv4Address dst,
-                        uint32_t dstSeqNo, Ipv4Address origin, uint32_t originSeqNo, uint16_t totalEnergy, uint16_t minimumEnergy) :
+                        uint32_t dstSeqNo, Ipv4Address origin, uint32_t originSeqNo,
+						uint16_t totalEnergy, uint16_t minimumEnergy, uint16_t originEnergy) :
   m_flags (flags), m_reserved (reserved), m_hopCount (hopCount), m_requestID (requestID), m_dst (dst),
-  m_dstSeqNo (dstSeqNo), m_origin (origin),  m_originSeqNo (originSeqNo), m_totalEnergy(totalEnergy), m_minimumEnergy(minimumEnergy)
+  m_dstSeqNo (dstSeqNo), m_origin (origin),  m_originSeqNo (originSeqNo),
+  m_totalEnergy(totalEnergy), m_minimumEnergy(minimumEnergy), m_originEnergy(originEnergy)
 {
 }
 
@@ -170,7 +172,7 @@ RreqHeader::GetInstanceTypeId () const
 uint32_t
 RreqHeader::GetSerializedSize () const
 {
-  return 27;
+  return 29;
 }
 
 void
@@ -186,6 +188,7 @@ RreqHeader::Serialize (Buffer::Iterator i) const
   i.WriteHtonU32 (m_originSeqNo);
   i.WriteU16(m_totalEnergy);
   i.WriteU16(m_minimumEnergy);
+  i.WriteU16(m_originEnergy);
 }
 
 uint32_t
@@ -202,6 +205,7 @@ RreqHeader::Deserialize (Buffer::Iterator start)
   m_originSeqNo = i.ReadNtohU32 ();
   m_totalEnergy = i.ReadU16();
   m_minimumEnergy = i.ReadU16();
+  m_originEnergy = i.ReadU16();
   uint32_t dist = i.GetDistanceFrom (start);
   NS_ASSERT (dist == GetSerializedSize ());
   return dist;
@@ -217,7 +221,8 @@ RreqHeader::Print (std::ostream &os) const
      << " Destination only " << (*this).GetDestinationOnly ()
      << " Unknown sequence number " << (*this).GetUnknownSeqno ()
 	 << " Total energy " << m_totalEnergy
-	 << " Minimum energy " << m_minimumEnergy;
+	 << " Minimum energy " << m_minimumEnergy
+	 << " Origin energy " << m_originEnergy;
 }
 
 std::ostream &
@@ -279,7 +284,8 @@ RreqHeader::operator== (RreqHeader const & o) const
           m_hopCount == o.m_hopCount && m_requestID == o.m_requestID &&
           m_dst == o.m_dst && m_dstSeqNo == o.m_dstSeqNo &&
           m_origin == o.m_origin && m_originSeqNo == o.m_originSeqNo &&
-		  m_totalEnergy == o.m_totalEnergy && m_minimumEnergy == o.m_minimumEnergy);
+		  m_totalEnergy == o.m_totalEnergy && m_minimumEnergy == o.m_minimumEnergy &&
+		  m_originEnergy == o.m_originEnergy);
 }
 
 //-----------------------------------------------------------------------------

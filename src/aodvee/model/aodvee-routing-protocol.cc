@@ -932,6 +932,7 @@ RoutingProtocol::LoopbackRoute (const Ipv4Header & hdr, Ptr<NetDevice> oif) cons
 void
 RoutingProtocol::SendRequest (Ipv4Address dst)
 {
+	//!!!ILK GONDERILEN RREQ PAKETIDIR, SONRAKILER RECVRREQ METHODU ILE PAKET ALINDIKCA GONDERILIYOR!!!
 
 	//TODO: Ornegin A' E ye mesaj yollamak istiyor bu sebeple kesif yapması gerekli
 	//TODO: A komsularına muhtemelen bu komsuları hello metodu ile kesfetti RREQ yolluyor.
@@ -943,6 +944,7 @@ RoutingProtocol::SendRequest (Ipv4Address dst)
 	//TODO: A hop count olarak 0 gönderiyor
 	//TODO: A toplam enerji olarak kendi enerjisini gondermeli
 	//TODO: A min enerji olarak da kendi enerjisini gondermeli
+	//TODO: A origin enerji olarak da kendi enerjisini göndermeli
   NS_LOG_FUNCTION ( this << dst);
   // A node SHOULD NOT originate more than RREQ_RATELIMIT RREQ messages per second.
   if (m_rreqCount == m_rreqRateLimit)
@@ -987,6 +989,7 @@ RoutingProtocol::SendRequest (Ipv4Address dst)
     {
       rreqHeader.SetUnknownSeqno (true);
       Ptr<NetDevice> dev = 0;
+      //İlk requestte routing table oluşturulmadığı için boş bir kayıt oluşturmuş.
       RoutingTableEntry newEntry (/*device=*/ dev, /*dst=*/ dst, /*validSeqNo=*/ false, /*seqno=*/ 0,
                                               /*iface=*/ Ipv4InterfaceAddress (),/*hop=*/ ttl,
                                               /*nextHop=*/ Ipv4Address (), /*lifeTime=*/ m_pathDiscoveryTime);
@@ -996,6 +999,16 @@ RoutingProtocol::SendRequest (Ipv4Address dst)
       newEntry.SetFlag (IN_SEARCH);
       m_routingTable.AddRoute (newEntry);
     }
+
+  //TODO: TotalEnergy, MinimumEnergy ve OriginEnergy değeri olarak kendi değeri eklenilmeli.
+  Ptr<Node> node = m_ipv4->GetObject<Node>();
+  Ptr<BasicEnergySource>  basicEnergySource  =  node->GetObject<BasicEnergySource>();
+  if(basicEnergySource != nullptr)
+  {
+     rreqHeader.SetTotalEnergy((uint16_t)basicEnergySource->GetRemainingEnergy());
+     rreqHeader.SetMinimumEnergy((uint16_t)basicEnergySource->GetRemainingEnergy());
+     rreqHeader.SetOriginEnergy((uint16_t)basicEnergySource->GetRemainingEnergy());
+  }
 
   if (m_gratuitousReply)
     rreqHeader.SetGratiousRrep (true);
@@ -1154,25 +1167,16 @@ RoutingProtocol::UpdateRouteLifeTime (Ipv4Address addr, Time lifetime)
 void
 RoutingProtocol::UpdateRouteToNeighbor (Ipv4Address sender, Ipv4Address receiver)
 {
+	//Bu fonksiyon herhangi bir AODV paketi geldiginde koşuyor ama sonrasında paketin tipine göre diğer fonksiyonlar (RecvRequest vb.) tarafından eziliyor.
   NS_LOG_FUNCTION (this << "sender " << sender << " receiver " << receiver);
   RoutingTableEntry toNeighbor;
 
-  Ptr<Node> node = m_ipv4->GetObject<Node>();
-  Ptr<BasicEnergySource>  basicEnergySource  =  node->GetObject<BasicEnergySource>();
-  uint16_t totalEnergy = 0;
-  uint16_t minimumEnergy = 65535;
-  if(basicEnergySource != nullptr)
-  {
-	  totalEnergy = (uint16_t)basicEnergySource->GetRemainingEnergy();
-	  minimumEnergy = (uint16_t)basicEnergySource->GetRemainingEnergy();
-  }
   if (!m_routingTable.LookupRoute (sender, toNeighbor))
     {
       Ptr<NetDevice> dev = m_ipv4->GetNetDevice (m_ipv4->GetInterfaceForAddress (receiver));
       RoutingTableEntry newEntry (/*device=*/ dev, /*dst=*/ sender, /*know seqno=*/ false, /*seqno=*/ 0,
                                               /*iface=*/ m_ipv4->GetAddress (m_ipv4->GetInterfaceForAddress (receiver), 0),
-                                              /*hops=*/ 1, /*next hop=*/ sender, /*lifetime=*/ m_activeRouteTimeout,
-											  /*totalEnergy=*/totalEnergy, /*minimumEnergy*/minimumEnergy);
+                                              /*hops=*/ 1, /*next hop=*/ sender, /*lifetime=*/ m_activeRouteTimeout);
       m_routingTable.AddRoute (newEntry);
     }
   else
@@ -1186,8 +1190,7 @@ RoutingProtocol::UpdateRouteToNeighbor (Ipv4Address sender, Ipv4Address receiver
         {
           RoutingTableEntry newEntry (/*device=*/ dev, /*dst=*/ sender, /*know seqno=*/ false, /*seqno=*/ 0,
                                                   /*iface=*/ m_ipv4->GetAddress (m_ipv4->GetInterfaceForAddress (receiver), 0),
-                                                  /*hops=*/ 1, /*next hop=*/ sender, /*lifetime=*/ std::max (m_activeRouteTimeout, toNeighbor.GetLifeTime ()),
-          	  	  	  	  	  	  	  	  	  	  /*totalEnergy=*/totalEnergy, /*minimumEnergy*/minimumEnergy);
+                                                  /*hops=*/ 1, /*next hop=*/ sender, /*lifetime=*/ std::max (m_activeRouteTimeout, toNeighbor.GetLifeTime ()));
           m_routingTable.Update (newEntry);
         }
     }
@@ -1205,6 +1208,7 @@ RoutingProtocol::RecvRequest (Ptr<Packet> p, Ipv4Address receiver, Ipv4Address s
 	//TODO: RTable da Hop count olarak RREQ den alınan değer 1 artırılarak set edilir.
 	//TODO: RTable da Toplam Enerji olarak RREQ den alınan enerji ile kendi enerjisi toplanarak set edilir.
 	//TODO: RTable da minumum Enerji olarak RREQ den alınan min enerji ile kendi enerjisi karsılastırılır ve min olan set edilir.
+	//TODO: RREQ paketine origin enerji olarak kendi enerjisini set edilir.
   NS_LOG_FUNCTION (this);
   RreqHeader rreqHeader;
   p->RemoveHeader (rreqHeader);
@@ -1250,7 +1254,10 @@ RoutingProtocol::RecvRequest (Ptr<Packet> p, Ipv4Address receiver, Ipv4Address s
 
 	  // Check It is Minimum Energy
 	  minimumEnergy = ((uint16_t)basicEnergySource->GetRemainingEnergy() < rreqHeader.GetMinimumEnergy()) ? (uint16_t)basicEnergySource->GetRemainingEnergy() : rreqHeader.GetMinimumEnergy();
+	  rreqHeader.SetMinimumEnergy(minimumEnergy);
 
+	  // Set Origin Energy as node remaining energy
+	  rreqHeader.SetOriginEnergy((uint16_t)basicEnergySource->GetRemainingEnergy());
   }
 
   /*
@@ -1295,6 +1302,13 @@ RoutingProtocol::RecvRequest (Ptr<Packet> p, Ipv4Address receiver, Ipv4Address s
       //m_nb.Update (src, Time (AllowedHelloLoss * HelloInterval));
     }
 
+  //TODO: Neighbor'ın enerjisi + kendi enerjimiz deyip routing table'a neigbor için öyle eklememiz gerek.
+
+  if(basicEnergySource != nullptr)
+  {
+	  totalEnergy = rreqHeader.GetOriginEnergy() + (uint16_t)basicEnergySource->GetRemainingEnergy();
+	  minimumEnergy = ((uint16_t)basicEnergySource->GetRemainingEnergy() < rreqHeader.GetOriginEnergy()) ? (uint16_t)basicEnergySource->GetRemainingEnergy() : rreqHeader.GetOriginEnergy();
+  }
 
   RoutingTableEntry toNeighbor;
   if (!m_routingTable.LookupRoute (src, toNeighbor))
@@ -1426,6 +1440,14 @@ RoutingProtocol::SendReply (RreqHeader const & rreqHeader, RoutingTableEntry con
     m_seqNo++;
   RrepHeader rrepHeader ( /*prefixSize=*/ 0, /*hops=*/ 0, /*dst=*/ rreqHeader.GetDst (),
                                           /*dstSeqNo=*/ m_seqNo, /*origin=*/ toOrigin.GetDestination (), /*lifeTime=*/ m_myRouteTimeout);
+
+  Ptr<Node> node = m_ipv4->GetObject<Node>();
+   Ptr<BasicEnergySource>  basicEnergySource  =  node->GetObject<BasicEnergySource>();
+  if(basicEnergySource != nullptr)
+  {
+	  rrepHeader.SetTotalEnergy((uint16_t)basicEnergySource->GetRemainingEnergy());
+	  rrepHeader.SetMinimumEnergy((uint16_t)basicEnergySource->GetRemainingEnergy());
+  }
   Ptr<Packet> packet = Create<Packet> ();
   SocketIpTtlTag tag;
   tag.SetTtl (toOrigin.GetHop ());
@@ -1481,6 +1503,9 @@ RoutingProtocol::SendReplyByIntermediateNode (RoutingTableEntry & toDst, Routing
   Ptr<Socket> socket = FindSocketWithInterfaceAddress (toOrigin.GetInterface ());
   NS_ASSERT (socket);
   socket->SendTo (packet, 0, InetSocketAddress (toOrigin.GetNextHop (), AODVEE_PORT));
+
+  //Intermediate geriye rrep döndüğünde destination node un bilgisi olmadığı için hangi yoldan origin node a bilgi gönderceğini bilmiyor
+  //bu yüzden Gratuitous RREP oluşturularak destination node bilgilendiriliyor.
 
   // Generating gratuitous RREPs
   if (gratRep)
@@ -1555,6 +1580,7 @@ RoutingProtocol::RecvReply (Ptr<Packet> p, Ipv4Address receiver, Ipv4Address sen
 
 	  // Check It is Minimum Energy
 	  minimumEnergy = ((uint16_t)basicEnergySource->GetRemainingEnergy() < rrepHeader.GetMinimumEnergy()) ? (uint16_t)basicEnergySource->GetRemainingEnergy() : rrepHeader.GetMinimumEnergy();
+	  rrepHeader.SetMinimumEnergy(minimumEnergy);
   }
 
   // If RREP is Hello message
@@ -1718,7 +1744,8 @@ RoutingProtocol::ProcessHello (RrepHeader const & rrepHeader, Ipv4Address receiv
       Ptr<NetDevice> dev = m_ipv4->GetNetDevice (m_ipv4->GetInterfaceForAddress (receiver));
       RoutingTableEntry newEntry (/*device=*/ dev, /*dst=*/ rrepHeader.GetDst (), /*validSeqNo=*/ true, /*seqno=*/ rrepHeader.GetDstSeqno (),
                                               /*iface=*/ m_ipv4->GetAddress (m_ipv4->GetInterfaceForAddress (receiver), 0),
-                                              /*hop=*/ 1, /*nextHop=*/ rrepHeader.GetDst (), /*lifeTime=*/ rrepHeader.GetLifeTime ());
+                                              /*hop=*/ 1, /*nextHop=*/ rrepHeader.GetDst (), /*lifeTime=*/ rrepHeader.GetLifeTime (),
+											  /*totalEnergy=*/ rrepHeader.GetTotalEnergy(), /*minimumEnergy=*/ rrepHeader.GetMinimumEnergy());
       m_routingTable.AddRoute (newEntry);
     }
   else
@@ -1731,6 +1758,8 @@ RoutingProtocol::ProcessHello (RrepHeader const & rrepHeader, Ipv4Address receiv
       toNeighbor.SetInterface (m_ipv4->GetAddress (m_ipv4->GetInterfaceForAddress (receiver), 0));
       toNeighbor.SetHop (1);
       toNeighbor.SetNextHop (rrepHeader.GetDst ());
+      toNeighbor.SetTotalEnergy(rrepHeader.GetTotalEnergy());
+      toNeighbor.SetMinimumEnergy(rrepHeader.GetMinimumEnergy());
       m_routingTable.Update (toNeighbor);
     }
   if (m_enableHello)
@@ -1908,6 +1937,15 @@ RoutingProtocol::SendHello ()
       Ipv4InterfaceAddress iface = j->second;
       RrepHeader helloHeader (/*prefix size=*/ 0, /*hops=*/ 0, /*dst=*/ iface.GetLocal (), /*dst seqno=*/ m_seqNo,
                                                /*origin=*/ iface.GetLocal (),/*lifetime=*/ Time (m_allowedHelloLoss * m_helloInterval));
+
+      Ptr<Node> node = m_ipv4->GetObject<Node>();
+      Ptr<BasicEnergySource>  basicEnergySource  =  node->GetObject<BasicEnergySource>();
+      if(basicEnergySource != nullptr)
+      {
+    	  helloHeader.SetTotalEnergy((uint16_t)basicEnergySource->GetRemainingEnergy());
+    	  helloHeader.SetMinimumEnergy((uint16_t)basicEnergySource->GetRemainingEnergy());
+      }
+
       Ptr<Packet> packet = Create<Packet> ();
       SocketIpTtlTag tag;
       tag.SetTtl (1);

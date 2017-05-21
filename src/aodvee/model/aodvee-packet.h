@@ -97,6 +97,8 @@ std::ostream & operator<< (std::ostream & os, TypeHeader const & h);
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   |           Total Energy        |  Minimum Energy               |
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |    Originator Energy										  |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   \endverbatim
 */
 class RreqHeader : public Header 
@@ -106,8 +108,8 @@ public:
   RreqHeader (uint8_t flags = 0, uint8_t reserved = 0, uint8_t hopCount = 0,
               uint32_t requestID = 0, Ipv4Address dst = Ipv4Address (),
               uint32_t dstSeqNo = 0, Ipv4Address origin = Ipv4Address (),
-              uint32_t originSeqNo = 0, uint16_t totalEnergy = 0, uint16_t minimumEnergy = 65535);
-
+              uint32_t originSeqNo = 0, uint16_t totalEnergy = 0,
+			  uint16_t minimumEnergy = 65535, uint16_t originEnergy = 0);
   // Header serialization/deserialization
   static TypeId GetTypeId ();
   TypeId GetInstanceTypeId () const;
@@ -133,6 +135,8 @@ public:
   uint16_t GetTotalEnergy() const { return m_totalEnergy; }
   void SetMinimumEnergy(uint16_t minimumEnergy) { m_minimumEnergy = minimumEnergy; }
   uint16_t GetMinimumEnergy() const { return m_minimumEnergy; }
+  void SetOriginEnergy(uint16_t originEnergy) { m_originEnergy = originEnergy; }
+  uint16_t GetOriginEnergy() const {return m_originEnergy; }
 
   // Flags
   void SetGratiousRrep (bool f);
@@ -154,6 +158,7 @@ private:
   uint32_t       m_originSeqNo;    ///< Source Sequence Number
   uint16_t		 m_totalEnergy;	   ///< Total Energy
   uint16_t		 m_minimumEnergy;  ///< Minimum Energy
+  uint16_t		 m_originEnergy;   ///< Originator Energy
 };
 
 std::ostream & operator<< (std::ostream & os, RreqHeader const &);
