@@ -21,8 +21,8 @@
  */
 
 #include "ns3/netanim-module.h"
-//#include "ns3/aodvee-module.h"
-#include "ns3/aodv-module.h"
+#include "ns3/aodvee-module.h"
+//#include "ns3/aodv-module.h"
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
 #include "ns3/internet-module.h"
@@ -240,8 +240,8 @@ AodveeExample::CreateDevices ()
 void
 AodveeExample::InstallInternetStack ()
 {
-  //AodveeHelper aodvee;
-  AodvHelper aodvee;
+  AodveeHelper aodvee;
+  //AodvHelper aodvee;
   // you can configure AODVEE attributes here using aodv.Set(name, value)
   InternetStackHelper stack;
   stack.SetRoutingHelper (aodvee); // has effect on the next Install ()
