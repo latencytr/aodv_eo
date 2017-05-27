@@ -21,8 +21,8 @@
  */
 
 #include "ns3/netanim-module.h"
-#include "ns3/aodvee-module.h"
-//#include "ns3/aodv-module.h"
+//#include "ns3/aodvee-module.h"
+#include "ns3/aodv-module.h"
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
 #include "ns3/internet-module.h"
@@ -182,6 +182,7 @@ AodveeExample::CreateNodes ()
       os << "node-" << i;
       Names::Add (os.str (), nodes.Get (i));
     }
+
   // Create static grid
   MobilityHelper mobility;
 //  mobility.SetPositionAllocator ("ns3::GridPositionAllocator",
@@ -215,10 +216,7 @@ AodveeExample::CreateNodes ()
                                    "PositionAllocator", PointerValue (taPositionAlloc));
    mobility.SetPositionAllocator (taPositionAlloc);
 
-  mobility.Install (nodes);
-
-
-
+   mobility.Install (nodes);
 }
 
 void
@@ -242,7 +240,8 @@ AodveeExample::CreateDevices ()
 void
 AodveeExample::InstallInternetStack ()
 {
-  AodveeHelper aodvee;
+  //AodveeHelper aodvee;
+  AodvHelper aodvee;
   // you can configure AODVEE attributes here using aodv.Set(name, value)
   InternetStackHelper stack;
   stack.SetRoutingHelper (aodvee); // has effect on the next Install ()
@@ -262,8 +261,8 @@ AodveeExample::InstallInternetStack ()
 void
 AodveeExample::InstallApplications ()
 {
-  V4PingHelper ping (interfaces.GetAddress (size - 1));
-  //V4PingHelper ping (interfaces.GetAddress (6));
+  //V4PingHelper ping (interfaces.GetAddress (size - 1));
+  V4PingHelper ping (interfaces.GetAddress (91));
   ping.SetAttribute ("Verbose", BooleanValue (true));
 
   ApplicationContainer p = ping.Install (nodes.Get (0));
@@ -271,9 +270,9 @@ AodveeExample::InstallApplications ()
   p.Stop (Seconds (totalTime) - Seconds (0.001));
 
   // move node away
-  Ptr<Node> node = nodes.Get (size/2);
-  Ptr<MobilityModel> mob = node->GetObject<MobilityModel> ();
-  Simulator::Schedule (Seconds (totalTime/3), &MobilityModel::SetPosition, mob, Vector (1e5, 1e5, 1e5));
+  //Ptr<Node> node = nodes.Get (size/2);
+  //Ptr<MobilityModel> mob = node->GetObject<MobilityModel> ();
+  //Simulator::Schedule (Seconds (totalTime/3), &MobilityModel::SetPosition, mob, Vector (1e5, 1e5, 1e5));
 }
 
 void
@@ -299,6 +298,7 @@ AodveeExample::InstallEnergyModule()
 		 energyModel->SetEnergySource (energySource);
 		 energySource->AppendDeviceEnergyModel (energyModel);
 		 energyModel->SetTxCurrentA(0.0174);
+		 energyModel->SetRxCurrentA(0.0174);
 
 		 // aggregate energy source to node
 		 Ptr<Node> object = *j;

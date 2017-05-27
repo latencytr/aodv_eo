@@ -639,8 +639,7 @@ RoutingProtocol::SetIpv4 (Ptr<Ipv4> ipv4)
   RoutingTableEntry rt (/*device=*/ m_lo, /*dst=*/ Ipv4Address::GetLoopback (), /*know seqno=*/ true, /*seqno=*/ 0,
                                     /*iface=*/ Ipv4InterfaceAddress (Ipv4Address::GetLoopback (), Ipv4Mask ("255.0.0.0")),
                                     /*hops=*/ 1, /*next hop=*/ Ipv4Address::GetLoopback (),
-                                    /*lifetime=*/ Simulator::GetMaximumSimulationTime (),
-									/*totalEnergy=*/ 0, /*minimumEnergy=*/ 65535);
+                                    /*lifetime=*/ Simulator::GetMaximumSimulationTime ());
   m_routingTable.AddRoute (rt);
 
   Simulator::ScheduleNow (&RoutingProtocol::Start, this);
@@ -1246,6 +1245,7 @@ RoutingProtocol::RecvRequest (Ptr<Packet> p, Ipv4Address receiver, Ipv4Address s
   Ptr<BasicEnergySource>  basicEnergySource  =  node->GetObject<BasicEnergySource>();
   uint16_t totalEnergy = 0;
   uint16_t minimumEnergy = 65535;
+  uint16_t originEnergy = 0;
   if(basicEnergySource != nullptr)
   {
 	  // Increment Total Energy
@@ -1257,6 +1257,7 @@ RoutingProtocol::RecvRequest (Ptr<Packet> p, Ipv4Address receiver, Ipv4Address s
 	  rreqHeader.SetMinimumEnergy(minimumEnergy);
 
 	  // Set Origin Energy as node remaining energy
+	  originEnergy = rreqHeader.GetOriginEnergy();
 	  rreqHeader.SetOriginEnergy((uint16_t)basicEnergySource->GetRemainingEnergy());
   }
 
@@ -1306,8 +1307,8 @@ RoutingProtocol::RecvRequest (Ptr<Packet> p, Ipv4Address receiver, Ipv4Address s
 
   if(basicEnergySource != nullptr)
   {
-	  totalEnergy = rreqHeader.GetOriginEnergy() + (uint16_t)basicEnergySource->GetRemainingEnergy();
-	  minimumEnergy = ((uint16_t)basicEnergySource->GetRemainingEnergy() < rreqHeader.GetOriginEnergy()) ? (uint16_t)basicEnergySource->GetRemainingEnergy() : rreqHeader.GetOriginEnergy();
+	  totalEnergy = originEnergy + (uint16_t)basicEnergySource->GetRemainingEnergy();
+	  minimumEnergy = ((uint16_t)basicEnergySource->GetRemainingEnergy() < originEnergy) ? (uint16_t)basicEnergySource->GetRemainingEnergy() : originEnergy;
   }
 
   RoutingTableEntry toNeighbor;

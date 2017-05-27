@@ -188,6 +188,7 @@ RoutingTableEntry::Print (Ptr<OutputStreamWrapper> stream) const
   std::setiosflags (std::ios::left) << std::setprecision (2) <<
   std::setw (14) << (m_lifeTime - Simulator::Now ()).GetSeconds ();
   *os << "\t" << m_hops;
+  //TODO: For printing energy parameters we have to edit this function properly.
   *os << "\t\t" << m_totalEnergy;
   *os << "\t\t" << m_minimumEnergy << "\n";
 }
@@ -445,6 +446,7 @@ RoutingTable::Print (Ptr<OutputStreamWrapper> stream) const
 {
   std::map<Ipv4Address, RoutingTableEntry> table = m_ipv4AddressEntry;
   Purge (table);
+  //TODO: For printing energy parameters we have to edit this function properly.
   *stream->GetStream () << "\nAODV Routing table\n"
                         << "Destination\tGateway\t\tInterface\tFlag\tExpire\t\tHops\tTotalEnergy\tMinimumEnergy\n";
   for (std::map<Ipv4Address, RoutingTableEntry>::const_iterator i =
