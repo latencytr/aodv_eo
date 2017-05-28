@@ -1,0 +1,35 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+def build(bld):
+    module = bld.create_ns3_module('aodvee', ['internet', 'wifi'])
+    module.includes = '.'
+    module.source = [
+        'model/aodvee-id-cache.cc',
+        'model/aodvee-dpd.cc',
+        'model/aodvee-rtable.cc',
+        'model/aodvee-rqueue.cc',
+        'model/aodvee-packet.cc',
+        'model/aodvee-neighbor.cc',
+        'model/aodvee-routing-protocol.cc',
+        'helper/aodvee-helper.cc',
+        ]
+
+   
+
+    headers = bld(features='ns3header')
+    headers.module = 'aodvee'
+    headers.source = [
+        'model/aodvee-id-cache.h',
+        'model/aodvee-dpd.h',
+        'model/aodvee-rtable.h',
+        'model/aodvee-rqueue.h',
+        'model/aodvee-packet.h',
+        'model/aodvee-neighbor.h',
+        'model/aodvee-routing-protocol.h',
+        'helper/aodvee-helper.h',
+        ]
+
+    if bld.env['ENABLE_EXAMPLES']:
+        bld.recurse('examples')
+
+
